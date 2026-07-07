@@ -1,0 +1,21 @@
+# Example Environment Variables Template
+# Copy this file to application-local.yml or define these as system environment variables
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/hotel_reservation
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: your_email@gmail.com
+    password: your_app_password
+
+jwt:
+  secret: GenerateARandomStringForLocalDevelopment
+  expiration: 86400000
+
+app:
+  mail:
+    from: noreply@grandreserve.com
