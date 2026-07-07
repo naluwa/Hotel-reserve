@@ -4,7 +4,7 @@ package com.hotel.reservation.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
+import java.time.LocalDate;
 
 
 @Document(collection = "bookings")
@@ -20,7 +20,10 @@ public class Booking {
     private String customerName;
     private String customerEmail;
     
-  
+    
+    private LocalDate checkInDate;
+    private LocalDate checkOutDate;
+    
     private double totalPayment;
     private String paymentStatus; 
 
@@ -35,7 +38,10 @@ public class Booking {
     public void setCustomerName(String customerName) { this.customerName = customerName; }
     public String getCustomerEmail() { return customerEmail; }
     public void setCustomerEmail(String customerEmail) { this.customerEmail = customerEmail; }
-    
+    public LocalDate getCheckInDate() { return checkInDate; }
+    public void setCheckInDate(LocalDate checkInDate) { this.checkInDate = checkInDate; }
+    public LocalDate getCheckOutDate() { return checkOutDate; }
+    public void setCheckOutDate(LocalDate checkOutDate) { this.checkOutDate = checkOutDate; }
     public double getTotalPayment() { return totalPayment; }
     public void setTotalPayment(double totalPayment) { this.totalPayment = totalPayment; }
     public String getPaymentStatus() { return paymentStatus; }
