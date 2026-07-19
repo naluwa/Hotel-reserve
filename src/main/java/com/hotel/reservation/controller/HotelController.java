@@ -96,5 +96,12 @@ public class HotelController {
         return reservationService.updatePaymentStatus(id, status);
     }
 
-   
+    // Customers
+
+    @GetMapping("/customers")
+    public List<Customer> getCustomers() { return reservationService.getAllCustomers(); }
+
+    @DeleteMapping("/customers/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCustomer(@PathVariable String id) { reservationService.deleteCustomer(id); }
 }
