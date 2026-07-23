@@ -34,17 +34,21 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/rooms", "/api/rooms/available").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/bookings/my").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/api/bookings/*/payment").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/bookings").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/bookings/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/rooms").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/rooms/available").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/rooms").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/rooms/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/bookings", "/api/customers").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/customers/**").hasRole("ADMIN")
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/customers/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/reservations").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers(HttpMethod.GET, "/api/reservations/my").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers(HttpMethod.PUT, "/api/reservations/*/payment").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers(HttpMethod.DELETE, "/api/reservations/**").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers("/api/reservations/**").hasRole("ADMIN")
+                .requestMatchers("/api/checkin/**").hasRole("ADMIN")
+                .requestMatchers("/api/checkout/**").hasRole("ADMIN")
+                .requestMatchers("/api/payments/**").hasRole("ADMIN")
+                .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             );
 
@@ -55,7 +59,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of(
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:4173",
+            "http://localhost:3000",
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:5174",
+            "http://127.0.0.1:4173",
+            "http://127.0.0.1:3000"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
         config.setAllowCredentials(true);

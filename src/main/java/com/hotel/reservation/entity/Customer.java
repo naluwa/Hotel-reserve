@@ -1,21 +1,29 @@
-package com.hotel.reservation.entity;
+package com.hotel.reservation.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Document(collection = "customers")
-public class Customer extends User {
-    private String name;
-    private int totalBookingsMade;
+public class Customer {
+    @Id
+    private String id;
 
-    public Customer(String name, String email) {
-        this.name = name;
-        this.setEmail(email);
-        this.totalBookingsMade = 1;
-    }
+    private String fullName;
+
+    @Indexed(unique = true)
+    private String nicPassport;
+
+    private String phone;
+    private String email;
+    private String address;
+    private String password;
 }
