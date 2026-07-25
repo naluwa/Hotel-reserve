@@ -75,9 +75,12 @@ export default function DashboardPanel({ token, showToast }) {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-white font-serif">Hotel Overview</h2>
+          <h2 className="text-2xl font-semibold text-white font-serif">
+            Hotel Overview
+          </h2>
           <p className="mt-1 text-sm text-slate-400">
-            A simple snapshot of room availability, active bookings, and guest traffic.
+            A simple snapshot of room availability, active bookings, and guest
+            traffic.
           </p>
         </div>
         <button
@@ -92,18 +95,13 @@ export default function DashboardPanel({ token, showToast }) {
         {cards.map((card, idx) => (
           <div
             key={idx}
-            className="rounded-xl border border-cashmere-700 bg-cashmere-900 p-5 space-y-3"
+            className="rounded-xl border border-cashmere-700 bg-cashmere-900 p-8 text-center"
           >
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-400">
-                {card.title}
-              </p>
-              <span className="rounded border border-cashmere-700 bg-heritage-900 px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-slate-300">
-                {card.note}
-              </span>
-            </div>
-            <p className="text-4xl font-bold text-white font-serif">
+            <p className="text-5xl font-bold text-white font-serif">
               {card.value}
+            </p>
+            <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-slate-400">
+              {card.title}
             </p>
           </div>
         ))}

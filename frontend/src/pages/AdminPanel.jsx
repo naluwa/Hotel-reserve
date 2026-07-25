@@ -10,6 +10,7 @@ import ReservationsPanel from "../components/admin/ReservationsPanel";
 import CheckInPanel from "../components/admin/CheckInPanel";
 import CheckOutPanel from "../components/admin/CheckOutPanel";
 import PaymentsPanel from "../components/admin/PaymentsPanel";
+import MessagesPanel from "../components/admin/MessagesPanel";
 import { Button } from "../components/base";
 import {
   createRoom,
@@ -26,6 +27,7 @@ const ADMIN_NAV_TABS = [
   [ADMIN_VIEWS.CHECKIN, "Check-In"],
   [ADMIN_VIEWS.CHECKOUT, "Check-Out"],
   [ADMIN_VIEWS.PAYMENTS, "Payments"],
+  [ADMIN_VIEWS.MESSAGES, "Messages"],
   [ADMIN_VIEWS.USERS, "Admins"],
 ];
 
@@ -83,7 +85,7 @@ const RoomsTable = ({ rooms, onEditRoom, onDeleteRoom, onAddRoom }) => (
                 </span>
               </td>
               <td className="max-w-xs truncate p-3 text-xs text-slate-400">
-                {room.description || "—"}
+                {room.description || "-"}
               </td>
               <td className="p-3">
                 <div className="flex flex-wrap gap-2">
@@ -137,14 +139,14 @@ export default function AdminPanel({
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedRooms = await fetchRooms();
+      const fetchedRooms = await fetchRooms(authToken);
       setRooms(fetchedRooms || []);
     } catch (err) {
       showToast(err.message, TOAST_TYPES.ERROR);
     } finally {
       setIsLoading(false);
     }
-  }, [showToast]);
+  }, [authToken, showToast]);
 
   useEffect(() => {
     loadData();
@@ -172,12 +174,24 @@ export default function AdminPanel({
       true,
     ).then(() => setShowAddRoom(false));
 
-  const handleSaveRoom = () =>
-    performAction(
-      updateRoom(editingRoom.id, editingRoom, authToken),
+  const handleSaveRoom = () => {
+    const amenities = Array.isArray(editingRoom.amenities)
+      ? editingRoom.amenities
+      : typeof editingRoom.amenities === "string"
+        ? editingRoom.amenities
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)
+        : [];
+
+    const payload = { ...editingRoom, amenities };
+
+    return performAction(
+      updateRoom(editingRoom.id, payload, authToken),
       "Room updated.",
       true,
     ).then(() => setEditingRoom(null));
+  };
 
   const handleDeleteRoom = (room) => {
     setConfirmDialog({
@@ -241,16 +255,31 @@ export default function AdminPanel({
             <CustomersPanel token={authToken} showToast={showToast} />
           )}
           {subView === ADMIN_VIEWS.RESERVATIONS && (
-            <ReservationsPanel token={authToken} showToast={showToast} />
+            <ReservationsPanel
+              token={authToken}
+              showToast={showToast}
+              onRoomsChanged={onRoomsChanged}
+            />
           )}
           {subView === ADMIN_VIEWS.CHECKIN && (
-            <CheckInPanel token={authToken} showToast={showToast} />
+            <CheckInPanel
+              token={authToken}
+              showToast={showToast}
+              onRoomsChanged={onRoomsChanged}
+            />
           )}
           {subView === ADMIN_VIEWS.CHECKOUT && (
-            <CheckOutPanel token={authToken} showToast={showToast} />
+            <CheckOutPanel
+              token={authToken}
+              showToast={showToast}
+              onRoomsChanged={onRoomsChanged}
+            />
           )}
           {subView === ADMIN_VIEWS.PAYMENTS && (
             <PaymentsPanel token={authToken} showToast={showToast} />
+          )}
+          {subView === ADMIN_VIEWS.MESSAGES && (
+            <MessagesPanel token={authToken} showToast={showToast} />
           )}
           {subView === ADMIN_VIEWS.USERS && (
             <AdminUsersPanel

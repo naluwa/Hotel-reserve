@@ -46,6 +46,11 @@ public class RoomService {
         existingRoom.setPricePerNight(updatedRoom.getPricePerNight());
         existingRoom.setStatus(updatedRoom.getStatus());
         existingRoom.setDescription(updatedRoom.getDescription());
+        existingRoom.setImageUrl(updatedRoom.getImageUrl());
+        existingRoom.setRoomSize(updatedRoom.getRoomSize());
+        existingRoom.setBedType(updatedRoom.getBedType());
+        existingRoom.setCapacity(updatedRoom.getCapacity());
+        existingRoom.setAmenities(updatedRoom.getAmenities());
 
         return roomRepository.save(normalizeRoom(existingRoom));
     }
@@ -112,6 +117,9 @@ public class RoomService {
         }
         if (room.getDescription() == null) {
             room.setDescription("");
+        }
+        if (room.getAmenities() == null) {
+            room.setAmenities(List.of());
         }
         return room;
     }

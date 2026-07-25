@@ -1,0 +1,19 @@
+# Development profile: use Mailtrap for safe SMTP testing
+spring:
+  mail:
+    host: ${MAIL_HOST:smtp.mailtrap.io}
+    port: ${MAIL_PORT:2525}
+    username: ${MAIL_USERNAME:your_mailtrap_username}
+    password: ${MAIL_PASSWORD:your_mailtrap_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: false
+
+# App mail from address
+app:
+  mail:
+    from: ${MAIL_FROM:noreply@grandreserve.com}

@@ -34,6 +34,9 @@ build/
 
 node_modules
 dist
+frontend/test-results/
+frontend/screenshots/
+**/.last-run.json
 
 ### Environment secrets — NEVER commit these ###
 .env

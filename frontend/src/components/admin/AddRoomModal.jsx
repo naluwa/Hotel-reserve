@@ -5,26 +5,44 @@ import {
   ModalFooter,
   Input,
   Select,
+  TextArea,
   Button,
 } from "../base";
+import { ROOM_TYPES } from "../../config/roomTypes";
 
-const ROOM_TYPES = ["Single", "Double", "Deluxe", "Suite"];
 const ROOM_STATUSES = ["Available", "Occupied", "Reserved", "Maintenance"];
 
 export default function AddRoomModal({ onSubmit, onClose }) {
   const [form, setForm] = useState({
     roomNumber: "",
-    roomType: "Single",
+    roomType: ROOM_TYPES[0],
     pricePerNight: "",
     description: "",
     status: "Available",
+    imageUrl: "",
+    roomSize: "",
+    bedType: "Queen Bed",
+    capacity: "2 Guests",
+    amenities: "",
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.roomNumber.trim()) return;
-    if (parseFloat(form.pricePerNight) <= 0) return;
-    onSubmit({ ...form, pricePerNight: parseFloat(form.pricePerNight) });
+
+    const pricePerNight = parseFloat(form.pricePerNight);
+    if (Number.isNaN(pricePerNight) || pricePerNight <= 0) return;
+
+    const amenities = form.amenities
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    onSubmit({
+      ...form,
+      pricePerNight,
+      amenities,
+    });
   };
 
   return (
@@ -55,21 +73,65 @@ export default function AddRoomModal({ onSubmit, onClose }) {
 
           <Select
             label="Room Type"
+            name="roomType"
             required
             value={form.roomType}
             onChange={(e) => setForm({ ...form, roomType: e.target.value })}
             options={ROOM_TYPES.map((type) => ({ value: type, label: type }))}
           />
 
-          <Input
+          <TextArea
             label="Description"
+            name="description"
             placeholder="Enter room description here"
+            rows={4}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
 
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Input
+              label="Room Size"
+              name="roomSize"
+              placeholder="520 sq ft"
+              value={form.roomSize}
+              onChange={(e) => setForm({ ...form, roomSize: e.target.value })}
+            />
+            <Select
+              label="Bed Type"
+              name="bedType"
+              value={form.bedType}
+              onChange={(e) => setForm({ ...form, bedType: e.target.value })}
+              options={[
+                "King Bed",
+                "Queen Bed",
+                "Twin Beds",
+                "Single Bed",
+                "Two Double Beds",
+              ].map((type) => ({ value: type, label: type }))}
+            />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Input
+              label="Guests"
+              name="capacity"
+              placeholder="2 Guests"
+              value={form.capacity}
+              onChange={(e) => setForm({ ...form, capacity: e.target.value })}
+            />
+            <Input
+              label="Amenities"
+              name="amenities"
+              placeholder="Free WiFi, Ocean View, Mini Bar"
+              value={form.amenities}
+              onChange={(e) => setForm({ ...form, amenities: e.target.value })}
+            />
+          </div>
+
           <Select
             label="Status"
+            name="status"
             required
             value={form.status}
             onChange={(e) => setForm({ ...form, status: e.target.value })}

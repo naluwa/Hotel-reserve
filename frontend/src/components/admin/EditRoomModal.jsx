@@ -6,8 +6,8 @@ import {
   Select,
   Button,
 } from "../base";
+import { ROOM_TYPES } from "../../config/roomTypes";
 
-const ROOM_TYPES = ["Single", "Double", "Deluxe", "Suite"];
 const ROOM_STATUSES = ["Available", "Reserved", "Occupied", "Maintenance"];
 
 export default function EditRoomModal({
@@ -68,6 +68,54 @@ export default function EditRoomModal({
               onRoomChange({ ...room, description: e.target.value })
             }
           />
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Input
+              label="Room Size"
+              placeholder="520 sq ft"
+              value={room.roomSize || ""}
+              onChange={(e) =>
+                onRoomChange({ ...room, roomSize: e.target.value })
+              }
+            />
+            <Select
+              label="Bed Type"
+              value={room.bedType || "Queen Bed"}
+              onChange={(e) =>
+                onRoomChange({ ...room, bedType: e.target.value })
+              }
+              options={[
+                "King Bed",
+                "Queen Bed",
+                "Twin Beds",
+                "Single Bed",
+                "Two Double Beds",
+              ].map((type) => ({ value: type, label: type }))}
+            />
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Input
+              label="Guests"
+              placeholder="2 Guests"
+              value={room.capacity || ""}
+              onChange={(e) =>
+                onRoomChange({ ...room, capacity: e.target.value })
+              }
+            />
+            <Input
+              label="Amenities"
+              placeholder="Free WiFi, Ocean View, Mini Bar"
+              value={
+                Array.isArray(room.amenities)
+                  ? room.amenities.join(", ")
+                  : room.amenities || ""
+              }
+              onChange={(e) =>
+                onRoomChange({ ...room, amenities: e.target.value })
+              }
+            />
+          </div>
 
           <Select
             label="Status"

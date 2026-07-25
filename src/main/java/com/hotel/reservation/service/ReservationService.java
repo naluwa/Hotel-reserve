@@ -9,6 +9,7 @@ import com.hotel.reservation.repository.CustomerRepository;
 import com.hotel.reservation.repository.ReservationRepository;
 import com.hotel.reservation.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
@@ -77,7 +79,10 @@ public class ReservationService {
         roomRepository.save(room);
 
         Reservation savedReservation = reservationRepository.save(reservation);
-        emailService.sendBookingConfirmation(savedReservation, room);
+        boolean emailSent = emailService.sendBookingConfirmation(savedReservation, room);
+        if (!emailSent) {
+            log.warn("Failed to send booking confirmation for reservation id={}", savedReservation.getId());
+        }
         return savedReservation;
     }
 
@@ -88,6 +93,13 @@ public class ReservationService {
         existing.setCheckInDate(request.getCheckInDate());
         existing.setCheckOutDate(request.getCheckOutDate());
         existing.setNumberOfGuests(request.getNumberOfGuests());
+
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            existing.setStatus(request.getStatus());
+        }
+        if (request.getPaymentStatus() != null && !request.getPaymentStatus().isBlank()) {
+            existing.setPaymentStatus(request.getPaymentStatus());
+        }
 
         long nights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
         existing.setNumberOfNights((int) nights);
@@ -139,7 +151,10 @@ public class ReservationService {
         if (reservation != null) {
             Room room = roomRepository.findById(reservation.getRoomId()).orElse(null);
             reservationRepository.deleteById(id);
-            emailService.sendBookingCancellation(reservation, room);
+            boolean canceled = emailService.sendBookingCancellation(reservation, room);
+            if (!canceled) {
+                log.warn("Failed to send booking cancellation for reservation id={}", id);
+            }
         }
     }
 

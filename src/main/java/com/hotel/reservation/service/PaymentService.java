@@ -12,6 +12,7 @@ import java.util.List;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final ReservationService reservationService;
 
     public List<Payment> getAllPayments() {
         return paymentRepository.findAll();
@@ -28,7 +29,14 @@ public class PaymentService {
                     existing.setPaymentDate(updated.getPaymentDate());
                     existing.setPaymentMethod(updated.getPaymentMethod());
                     existing.setPaymentStatus(updated.getPaymentStatus());
-                    return paymentRepository.save(existing);
+                    
+                    Payment savedPayment = paymentRepository.save(existing);
+                    
+                    if ("Paid".equals(updated.getPaymentStatus()) && existing.getReservationId() != null) {
+                        reservationService.updatePaymentStatus(existing.getReservationId(), "PAID");
+                    }
+                    
+                    return savedPayment;
                 })
                 .orElseThrow();
     }

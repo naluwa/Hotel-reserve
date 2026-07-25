@@ -12,6 +12,7 @@ export const VIEWS = {
   LOGIN: "login",
   CUSTOMER_LOGIN: "customer_login",
   CUSTOMER_BOOKINGS: "customer_bookings",
+  CUSTOMER_MESSAGES: "customer_messages",
 };
 
 export const ADMIN_VIEWS = {
@@ -22,6 +23,7 @@ export const ADMIN_VIEWS = {
   CHECKIN: "checkin",
   CHECKOUT: "checkout",
   PAYMENTS: "payments",
+  MESSAGES: "messages",
   USERS: "users",
 };
 

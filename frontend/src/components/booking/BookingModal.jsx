@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { formatLKR } from '../../utils/currency';
+import { useEffect, useState } from "react";
+import { formatLKR } from "../../utils/currency";
 import {
   Modal,
   ModalContent,
@@ -12,11 +12,11 @@ import {
   Alert,
   Badge,
   Spinner,
-} from '../base';
+} from "../base";
 
 const todayStr = () => {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
 export default function BookingModal({
@@ -33,14 +33,14 @@ export default function BookingModal({
   isLoading = false,
   error = null,
 }) {
-  const [draftCheckIn, setDraftCheckIn] = useState(checkInDate || '');
-  const [draftCheckOut, setDraftCheckOut] = useState(checkOutDate || '');
+  const [draftCheckIn, setDraftCheckIn] = useState(checkInDate || "");
+  const [draftCheckOut, setDraftCheckOut] = useState(checkOutDate || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
-    setDraftCheckIn(checkInDate || '');
-    setDraftCheckOut(checkOutDate || '');
+    setDraftCheckIn(checkInDate || "");
+    setDraftCheckOut(checkOutDate || "");
   }, [checkInDate, checkOutDate, room?.id]);
 
   if (!room) return null;
@@ -56,27 +56,27 @@ export default function BookingModal({
   }
 
   const total = room.pricePerNight * nights;
-  const formattedStay = `${draftCheckIn || '—'} to ${draftCheckOut || '—'}`;
+  const formattedStay = `${draftCheckIn || "-"} to ${draftCheckOut || "-"}`;
 
   const validateForm = () => {
     const errors = {};
 
     if (!draftCheckIn) {
-      errors.checkIn = 'Arrival date is required';
+      errors.checkIn = "Arrival date is required";
     }
     if (!draftCheckOut) {
-      errors.checkOut = 'Departure date is required';
+      errors.checkOut = "Departure date is required";
     }
     if (draftCheckIn && draftCheckOut && draftCheckOut <= draftCheckIn) {
-      errors.checkOut = 'Departure date must be after arrival date';
+      errors.checkOut = "Departure date must be after arrival date";
     }
     if (!customerName?.trim()) {
-      errors.name = 'Full name is required';
+      errors.name = "Full name is required";
     }
     if (!customerEmail?.trim()) {
-      errors.email = 'Email address is required';
+      errors.email = "Email address is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = "Please enter a valid email address";
     }
 
     setFormErrors(errors);
@@ -119,7 +119,10 @@ export default function BookingModal({
 
           <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
             {/* Left Column: Summary & Cost */}
-            <Card variant="elevated" className="flex flex-col justify-between p-6 space-y-6 bg-cashmere-900 border-cashmere-700">
+            <Card
+              variant="elevated"
+              className="flex flex-col justify-between p-6 space-y-6 bg-cashmere-900 border-cashmere-700"
+            >
               <div className="space-y-5">
                 <div>
                   <div className="flex items-center justify-between">
@@ -141,12 +144,20 @@ export default function BookingModal({
                   </h4>
                   <div className="grid gap-3 sm:grid-cols-2 text-sm">
                     <div className="rounded-2xl border border-cashmere-700 bg-heritage-900 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-slate-400">Arrival</p>
-                      <p className="mt-1 font-semibold text-white">{draftCheckIn || 'Not selected'}</p>
+                      <p className="text-[10px] uppercase tracking-wider text-slate-400">
+                        Arrival
+                      </p>
+                      <p className="mt-1 font-semibold text-white">
+                        {draftCheckIn || "Not selected"}
+                      </p>
                     </div>
                     <div className="rounded-2xl border border-cashmere-700 bg-heritage-900 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-slate-400">Departure</p>
-                      <p className="mt-1 font-semibold text-white">{draftCheckOut || 'Not selected'}</p>
+                      <p className="text-[10px] uppercase tracking-wider text-slate-400">
+                        Departure
+                      </p>
+                      <p className="mt-1 font-semibold text-white">
+                        {draftCheckOut || "Not selected"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -161,7 +172,9 @@ export default function BookingModal({
                   </div>
                   <div className="flex items-center justify-between text-slate-300">
                     <span>Stay length</span>
-                    <span>{nights} night{nights !== 1 ? 's' : ''}</span>
+                    <span>
+                      {nights} night{nights !== 1 ? "s" : ""}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -169,16 +182,23 @@ export default function BookingModal({
               <div className="rounded-2xl border border-brass-subtle bg-brass/10 p-4">
                 <div className="flex items-center justify-between text-base font-semibold text-white">
                   <span>Total Cost</span>
-                  <span className="text-brass text-lg font-bold">{formatLKR(total)}</span>
+                  <span className="text-brass text-lg font-bold">
+                    {formatLKR(total)}
+                  </span>
                 </div>
               </div>
             </Card>
 
             {/* Right Column: Guest Form Inputs */}
-            <Card variant="elevated" className="flex flex-col justify-between p-6 space-y-5 bg-cashmere-900 border-cashmere-700">
+            <Card
+              variant="elevated"
+              className="flex flex-col justify-between p-6 space-y-5 bg-cashmere-900 border-cashmere-700"
+            >
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm font-semibold text-white">Guest Details</p>
+                  <p className="text-sm font-semibold text-white">
+                    Guest Details
+                  </p>
                   <p className="mt-1 text-xs text-slate-400">
                     Select your stay dates and confirm this room instantly.
                   </p>
@@ -192,7 +212,8 @@ export default function BookingModal({
                     min={today}
                     onChange={(e) => {
                       setDraftCheckIn(e.target.value);
-                      if (formErrors.checkIn) setFormErrors({ ...formErrors, checkIn: '' });
+                      if (formErrors.checkIn)
+                        setFormErrors({ ...formErrors, checkIn: "" });
                     }}
                     required
                     error={formErrors.checkIn}
@@ -206,7 +227,8 @@ export default function BookingModal({
                     min={minCheckOut}
                     onChange={(e) => {
                       setDraftCheckOut(e.target.value);
-                      if (formErrors.checkOut) setFormErrors({ ...formErrors, checkOut: '' });
+                      if (formErrors.checkOut)
+                        setFormErrors({ ...formErrors, checkOut: "" });
                     }}
                     required
                     error={formErrors.checkOut}
@@ -220,7 +242,8 @@ export default function BookingModal({
                   value={customerName}
                   onChange={(e) => {
                     onNameChange(e.target.value);
-                    if (formErrors.name) setFormErrors({ ...formErrors, name: '' });
+                    if (formErrors.name)
+                      setFormErrors({ ...formErrors, name: "" });
                   }}
                   placeholder="Enter your full name here"
                   required
@@ -234,7 +257,8 @@ export default function BookingModal({
                   value={customerEmail}
                   onChange={(e) => {
                     onEmailChange(e.target.value);
-                    if (formErrors.email) setFormErrors({ ...formErrors, email: '' });
+                    if (formErrors.email)
+                      setFormErrors({ ...formErrors, email: "" });
                   }}
                   placeholder="Enter your email address here"
                   required
@@ -263,12 +287,16 @@ export default function BookingModal({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || isLoading || !draftCheckIn || !draftCheckOut}
+              disabled={
+                isSubmitting || isLoading || !draftCheckIn || !draftCheckOut
+              }
               loading={isSubmitting || isLoading}
               fullWidth
               aria-busy={isSubmitting || isLoading}
             >
-              {isSubmitting || isLoading ? 'Confirming...' : 'Confirm Reservation'}
+              {isSubmitting || isLoading
+                ? "Confirming..."
+                : "Confirm Reservation"}
             </Button>
           </ModalFooter>
         </ModalContent>

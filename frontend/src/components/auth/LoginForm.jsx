@@ -16,7 +16,10 @@ export default function LoginForm({ onSubmit }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [setupMessage, setSetupMessage] = useState({ text: "", isError: false });
+  const [setupMessage, setSetupMessage] = useState({
+    text: "",
+    isError: false,
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,7 +36,9 @@ export default function LoginForm({ onSubmit }) {
         setPassword("");
       } catch (err) {
         setSetupMessage({
-          text: err.message || "Could not complete setup. Verify your eligible email.",
+          text:
+            err.message ||
+            "Could not complete setup. Verify your eligible email.",
           isError: true,
         });
       }
@@ -98,7 +103,11 @@ export default function LoginForm({ onSubmit }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={isSetup ? "Enter minimum 6 characters here" : "Enter your password here"}
+              placeholder={
+                isSetup
+                  ? "Enter minimum 6 characters here"
+                  : "Enter your password here"
+              }
               autoComplete={isSetup ? "new-password" : "current-password"}
               required
             />
@@ -110,10 +119,12 @@ export default function LoginForm({ onSubmit }) {
             </Button>
 
             <p className="text-center text-xs text-slate-400">
-              {isSetup ? "Already setup your account? " : "Assigned as a new admin? "}
+              {isSetup
+                ? "Already setup your account? "
+                : "Assigned as a new admin? "}
               <button
                 type="button"
-                className="text-brass underline font-semibold"
+                className="text-brass font-semibold"
                 onClick={() => {
                   setIsSetup(!isSetup);
                   setSetupMessage({ text: "", isError: false });

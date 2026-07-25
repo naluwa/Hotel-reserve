@@ -32,9 +32,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         Customer customer = customerRepository.findByEmail(username)
             .orElseThrow(() -> new UsernameNotFoundException("No user: " + username));
+        String pwd = customer.getPassword() != null ? customer.getPassword() : "";
         return new org.springframework.security.core.userdetails.User(
             customer.getEmail(),
-            customer.getPassword(),
+            pwd,
             List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
         );
     }

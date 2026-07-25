@@ -1,6 +1,4 @@
-// External
 import { useState, useCallback, useEffect } from "react";
-// Internal — constants & services
 import { TOAST_TYPES } from "../config/constants";
 import {
   fetchRooms,
@@ -10,17 +8,53 @@ import {
 } from "../services/api";
 import { getRoomIdentifier } from "../utils/roomCatalog";
 
-// Hook
+const formatIsoDate = (date) => date.toISOString().split("T")[0];
+
+const normalizeDateRange = (start, end) => {
+  if (start && !end) {
+    const nextDay = new Date(start);
+    nextDay.setDate(nextDay.getDate() + 1);
+    return { start, end: formatIsoDate(nextDay) };
+  }
+
+  if (!start && end) {
+    const previousDay = new Date(end);
+    previousDay.setDate(previousDay.getDate() - 1);
+    return { start: formatIsoDate(previousDay), end };
+  }
+
+  if (start && end && end <= start) {
+    const nextDay = new Date(start);
+    nextDay.setDate(nextDay.getDate() + 1);
+    return { start, end: formatIsoDate(nextDay) };
+  }
+
+  return { start, end };
+};
+
+const validateBookingDates = (checkInDate, checkOutDate) => {
+  if (!checkInDate || !checkOutDate) {
+    return "Please select both arrival and departure dates.";
+  }
+  if (checkOutDate <= checkInDate) {
+    return "Departure must be after arrival.";
+  }
+  return null;
+};
 
 export function useRooms(showToast, token) {
   const [rooms, setRooms] = useState([]);
-  // setFilteredRooms is intentionally public: Navigation uses it to clear search results.
   const [filteredRooms, setFilteredRooms] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterCheckIn, setFilterCheckIn] = useState("");
   const [filterCheckOut, setFilterCheckOut] = useState("");
   const [bookingRoom, setBookingRoom] = useState(null);
   const [editingRoom, setEditingRoom] = useState(null);
+
+  const toast = useCallback(
+    (message, type = TOAST_TYPES.INFO) => showToast(message, type),
+    [showToast],
+  );
 
   const loadRooms = useCallback(async () => {
     setIsLoading(true);
@@ -29,53 +63,43 @@ export function useRooms(showToast, token) {
       setRooms(data);
       setFilteredRooms(data);
     } catch {
-      showToast(
+      toast(
         "Could not load rooms. Please verify the server is running.",
         TOAST_TYPES.ERROR,
       );
     } finally {
       setIsLoading(false);
     }
-  }, [showToast]);
+  }, [toast]);
 
   useEffect(() => {
     loadRooms();
   }, [loadRooms]);
 
   const handleFindRooms = async () => {
-    let start = filterCheckIn;
-    let end = filterCheckOut;
+    const normalized = normalizeDateRange(filterCheckIn, filterCheckOut);
 
-    if (start && !end) {
-      const startDate = new Date(start);
-      startDate.setDate(startDate.getDate() + 1);
-      end = startDate.toISOString().split("T")[0];
-      setFilterCheckOut(end);
-    } else if (!start && end) {
-      const endDate = new Date(end);
-      endDate.setDate(endDate.getDate() - 1);
-      start = endDate.toISOString().split("T")[0];
-      setFilterCheckIn(start);
+    if (normalized.start !== filterCheckIn) {
+      setFilterCheckIn(normalized.start || "");
     }
-
-    if (start && end && end <= start) {
-      const startDate = new Date(start);
-      startDate.setDate(startDate.getDate() + 1);
-      end = startDate.toISOString().split("T")[0];
-      setFilterCheckOut(end);
+    if (normalized.end !== filterCheckOut) {
+      setFilterCheckOut(normalized.end || "");
     }
 
     setIsLoading(true);
     try {
-      const available = await fetchAvailableRooms(start || "", end || "");
+      const available = await fetchAvailableRooms(
+        normalized.start || "",
+        normalized.end || "",
+      );
       setFilteredRooms(available);
       const count = available.length;
-      showToast(
+      toast(
         `${count} room${count !== 1 ? "s" : ""} available for your search.`,
         TOAST_TYPES.INFO,
       );
     } catch {
-      showToast(
+      toast(
         "Could not filter availability. Showing all rooms.",
         TOAST_TYPES.WARNING,
       );
@@ -91,14 +115,9 @@ export function useRooms(showToast, token) {
     setFilteredRooms(rooms);
   };
 
-  /**
-   * Validates all preconditions before a booking modal can open:
-   * - User must be authenticated (when requireAuth=true)
-   * Returns { valid: boolean, redirectToLogin: boolean }
-   */
   const validateBookingPreconditions = (requireAuth) => {
     if (requireAuth && !token) {
-      showToast(
+      toast(
         "Please sign in or register to make a reservation.",
         TOAST_TYPES.INFO,
       );
@@ -110,7 +129,7 @@ export function useRooms(showToast, token) {
   const openBookingModal = (room, requireAuth) => {
     const { valid, redirectToLogin } =
       validateBookingPreconditions(requireAuth);
-    if (!valid) return redirectToLogin ? false : true;
+    if (!valid) return redirectToLogin;
     setBookingRoom(room);
     return true;
   };
@@ -122,20 +141,13 @@ export function useRooms(showToast, token) {
     checkOutDate,
   ) => {
     if (!bookingRoom) {
-      showToast("Please select a room first.", TOAST_TYPES.ERROR);
+      toast("Please select a room first.", TOAST_TYPES.ERROR);
       return false;
     }
 
-    if (!checkInDate || !checkOutDate) {
-      showToast(
-        "Please select both arrival and departure dates.",
-        TOAST_TYPES.ERROR,
-      );
-      return false;
-    }
-
-    if (checkOutDate <= checkInDate) {
-      showToast("Departure must be after arrival.", TOAST_TYPES.ERROR);
+    const bookingError = validateBookingDates(checkInDate, checkOutDate);
+    if (bookingError) {
+      toast(bookingError, TOAST_TYPES.ERROR);
       return false;
     }
 
@@ -150,7 +162,7 @@ export function useRooms(showToast, token) {
       );
 
       if (!isRoomAvailable) {
-        showToast(
+        toast(
           "These dates are not available for this room. Please choose another stay.",
           TOAST_TYPES.ERROR,
         );
@@ -168,17 +180,19 @@ export function useRooms(showToast, token) {
         },
         token,
       );
-      showToast(
+
+      toast(
         `Room ${bookingRoom.roomNumber} reserved successfully.`,
         TOAST_TYPES.SUCCESS,
       );
+
       setFilterCheckIn(checkInDate);
       setFilterCheckOut(checkOutDate);
       setBookingRoom(null);
       setFilteredRooms(await fetchAvailableRooms(checkInDate, checkOutDate));
       return true;
     } catch (err) {
-      showToast(err.message, TOAST_TYPES.ERROR);
+      toast(err.message, TOAST_TYPES.ERROR);
       return false;
     }
   };
@@ -187,11 +201,11 @@ export function useRooms(showToast, token) {
     if (!editingRoom) return;
     try {
       await updateRoom(editingRoom.id, editingRoom, token);
-      showToast("Ledger entry updated.", TOAST_TYPES.SUCCESS);
+      toast("Ledger entry updated.", TOAST_TYPES.SUCCESS);
       setEditingRoom(null);
       await loadRooms();
     } catch (err) {
-      showToast(err.message, TOAST_TYPES.ERROR);
+      toast(err.message, TOAST_TYPES.ERROR);
     }
   };
 

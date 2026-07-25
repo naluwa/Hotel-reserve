@@ -1,25 +1,96 @@
 package com.hotel.reservation.config;
 
+import com.hotel.reservation.model.Room;
+import com.hotel.reservation.repository.CustomerRepository;
+import com.hotel.reservation.repository.GuestMessageRepository;
+import com.hotel.reservation.repository.PaymentRepository;
+import com.hotel.reservation.repository.ReservationRepository;
+import com.hotel.reservation.repository.RoomRepository;
+import com.hotel.reservation.repository.UserRepository;
 import com.hotel.reservation.service.AuthService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
+@Slf4j
+@RequiredArgsConstructor
 public class DatabaseInitializer implements CommandLineRunner {
 
     private final AuthService authService;
-
-    public DatabaseInitializer(AuthService authService) {
-        this.authService = authService;
-    }
+    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
+    private final RoomRepository roomRepository;
+    private final ReservationRepository reservationRepository;
+    private final PaymentRepository paymentRepository;
+    private final GuestMessageRepository guestMessageRepository;
 
     @Override
     public void run(String... args) throws Exception {
-        // Initialize the default admin user as specified in requirements and keep the
-        // legacy username alias working.
+        // Clean all application data before seeding default state.
+        guestMessageRepository.deleteAll();
+        reservationRepository.deleteAll();
+        paymentRepository.deleteAll();
+        roomRepository.deleteAll();
+        customerRepository.deleteAll();
+        userRepository.deleteAll();
 
         authService.createAdminIfMissing("admin@example.com", "admin123", "System Administrator");
-        System.out.println(
-                "DatabaseInitializer: Checked/Created default admin accounts 'admin', 'admin@grandreserve.com', and 'admin@example.com' with password 'admin123'");
+
+        roomRepository.saveAll(List.of(
+                Room.builder()
+                        .roomNumber("101")
+                        .roomType("Single")
+                        .pricePerNight(4500)
+                        .status("Available")
+                        .description("Cozy single room ideal for solo travelers.")
+                        .imageUrl("/images/room_single.jpg")
+                        .roomSize("260 sq ft")
+                        .bedType("Single Bed")
+                        .capacity("1 Guest")
+                        .amenities(List.of("Free Wi-Fi", "Air Conditioning", "Flat-screen TV"))
+                        .build(),
+                Room.builder()
+                        .roomNumber("102")
+                        .roomType("Double")
+                        .pricePerNight(6500)
+                        .status("Available")
+                        .description("Comfortable double room with city view and modern amenities.")
+                        .imageUrl("/images/room_double.jpg")
+                        .roomSize("360 sq ft")
+                        .bedType("Queen Bed")
+                        .capacity("2 Guests")
+                        .amenities(List.of("Free Wi-Fi", "Mini Bar", "Room Service"))
+                        .build(),
+                Room.builder()
+                        .roomNumber("201")
+                        .roomType("Deluxe")
+                        .pricePerNight(9500)
+                        .status("Available")
+                        .description("Spacious deluxe room with premium furnishings and balcony.")
+                        .imageUrl("/images/room_deluxe.jpg")
+                        .roomSize("520 sq ft")
+                        .bedType("King Bed")
+                        .capacity("2 Guests")
+                        .amenities(List.of("Free Wi-Fi", "Breakfast Included", "Spa Access"))
+                        .build(),
+                Room.builder()
+                        .roomNumber("301")
+                        .roomType("Suite")
+                        .pricePerNight(15000)
+                        .status("Available")
+                        .description("Luxury suite with premium living area and ocean-inspired décor.")
+                        .imageUrl("/images/room_suite.jpg")
+                        .roomSize("650 sq ft")
+                        .bedType("King Bed")
+                        .capacity("4 Guests")
+                        .amenities(List.of("Free Wi-Fi", "Private Lounge", "Complimentary Champagne"))
+                        .build()
+        ));
+
+        log.info("Database reset and seeded default admin and sample rooms.");
     }
 }

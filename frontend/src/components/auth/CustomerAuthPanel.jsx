@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { Button, Card, Input } from "../base";
 
-export default function CustomerAuthPanel({ onLogin, onRegister }) {
-  const [isLogin, setIsLogin] = useState(true);
+export default function CustomerAuthPanel({
+  onLogin,
+  onRegister,
+  initialMode = "login",
+}) {
+  const [isLogin, setIsLogin] = useState(initialMode === "login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -119,7 +123,7 @@ export default function CustomerAuthPanel({ onLogin, onRegister }) {
               {isLogin ? "New guest? " : "Already registered? "}
               <button
                 type="button"
-                className="text-brass underline"
+                className="text-brass"
                 onClick={() => setIsLogin(!isLogin)}
               >
                 {isLogin ? "Create an account" : "Sign in"}

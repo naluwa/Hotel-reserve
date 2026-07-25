@@ -4,64 +4,87 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary Background (60%) — Midnight Charcoal
         heritage: {
-          900: "#0F1115",
-          800: "#14171D",
+          950: "#05080d",
+          900: "#0f1115",
+          800: "#141b26",
+          700: "#1b2140",
         },
-        // Secondary / Cards (30%) — Cashmere Slate
         cashmere: {
-          900: "#1B1D22",
-          800: "#22252C",
-          700: "#2C2F38",
+          950: "#10141e",
+          900: "#161922",
+          800: "#1f2937",
+          700: "#2c3347",
         },
-        // Accent (10%) — Antique Brass
+        brand: {
+          DEFAULT: "#af8c43",
+          soft: "#d6b069",
+          dark: "#8c6f35",
+        },
+        accent: {
+          DEFAULT: "#ffd166",
+          soft: "#fff4c2",
+          dark: "#d7a517",
+        },
         brass: {
-          DEFAULT: "#AF8C43",
-          light: "#C29C4A",
-          muted: "#7A6230",
+          DEFAULT: "#af8c43",
+          light: "#c9a963",
+          muted: "#7a6230",
+          subtle: "#d6b069",
         },
-        // Semantic states
-        pine: {
-          DEFAULT: "#059669",
-          dark: "#065F46",
+        slate: {
+          950: "#0f172a",
+          900: "#111827",
+          800: "#1f2937",
+          700: "#374151",
+          600: "#4b5563",
+          500: "#6b7280",
+          400: "#9ca3af",
+          300: "#d1d5db",
+          200: "#e5e7eb",
+          100: "#f3f4f6",
         },
-        crimson: {
-          DEFAULT: "#E11D48",
-          dark: "#9F1239",
+        success: {
+          DEFAULT: "#22c55e",
+          dark: "#15803d",
         },
-        ochre: {
-          DEFAULT: "#D97706",
-          dark: "#92400E",
+        warning: {
+          DEFAULT: "#f59e0b",
+          dark: "#b45309",
+        },
+        danger: {
+          DEFAULT: "#ef4444",
+          dark: "#b91c1c",
         },
       },
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', "system-ui", "sans-serif"],
+        sans: ['"Inter"', '"Plus Jakarta Sans"', "system-ui", "sans-serif"],
         serif: ['"Cormorant Garamond"', "Georgia", "serif"],
       },
       boxShadow: {
-        card: "0 8px 32px rgba(0,0,0,0.5)",
-        "card-hover": "0 12px 48px rgba(0,0,0,0.65)",
-        modal: "0 24px 80px rgba(0,0,0,0.7)",
+        card: "0 24px 70px rgba(0, 0, 0, 0.18)",
+        panel: "0 20px 60px rgba(0, 0, 0, 0.16)",
+        modal: "0 24px 80px rgba(0, 0, 0, 0.55)",
+        glow: "0 0 0 1px rgba(79, 153, 255, 0.12), 0 28px 80px rgba(7, 17, 30, 0.22)",
       },
-      borderColor: {
-        brass: "#AF8C43",
-        "brass-subtle": "#3A3020",
-      },
-      animation: {
-        "fade-in": "fadeIn 0.5s ease forwards",
-        "fade-slide-up":
-          "fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards",
+      borderRadius: {
+        xl: "1.75rem",
+        "2xl": "2rem",
+        "3xl": "2.25rem",
       },
       keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
         fadeIn: {
-          from: { opacity: "0" },
-          to: { opacity: "1" },
+          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        fadeSlideUp: {
-          from: { opacity: "0", transform: "translateY(10px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
+      },
+      animation: {
+        float: "float 8s ease-in-out infinite",
+        "fade-in": "fadeIn 0.55s ease-out forwards",
       },
     },
   },

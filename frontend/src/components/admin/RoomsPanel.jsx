@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Input, Button } from "../base";
 import {
   createRoom,
   deleteRoom,
@@ -93,40 +94,37 @@ export default function RoomsPanel({ token }) {
           className="mt-6 grid gap-4 md:grid-cols-4"
           onSubmit={handleSubmit}
         >
-          <input
+          <Input
+            label="Room Number"
             placeholder="Enter room number here"
             value={form.roomNumber}
             onChange={(e) =>
               setForm((prev) => ({ ...prev, roomNumber: e.target.value }))
             }
-            className="rounded-3xl border border-cashmere-700 bg-heritage-900 px-4 py-3 text-white"
             required
           />
-          <input
+          <Input
+            label="Room Type"
             placeholder="Enter room type here"
             value={form.roomType}
             onChange={(e) =>
               setForm((prev) => ({ ...prev, roomType: e.target.value }))
             }
-            className="rounded-3xl border border-cashmere-700 bg-heritage-900 px-4 py-3 text-white"
             required
           />
-          <input
+          <Input
+            label="Price Per Night"
             type="number"
             placeholder="Enter price per night here"
             value={form.price}
             onChange={(e) =>
               setForm((prev) => ({ ...prev, price: Number(e.target.value) }))
             }
-            className="rounded-3xl border border-cashmere-700 bg-heritage-900 px-4 py-3 text-white"
             required
           />
-          <button
-            type="submit"
-            className="rounded-3xl bg-brass px-5 py-3 text-sm font-bold text-heritage-900"
-          >
+          <Button type="submit" variant="primary">
             {editing ? "Update Room" : "Add Room"}
-          </button>
+          </Button>
         </form>
 
         {error && <p className="mt-4 text-sm text-crimson">{error}</p>}
@@ -142,28 +140,30 @@ export default function RoomsPanel({ token }) {
             >
               <div>
                 <p className="text-lg font-semibold text-white">
-                  {room.roomNumber} — {room.roomType}
+                  {room.roomNumber} - {room.roomType}
                 </p>
                 <p className="text-sm text-slate-400">
-                  ${room.pricePerNight} / night —{" "}
+                  ${room.pricePerNight} / night -{" "}
                   {room.status === "Available" ? "Available" : "Unavailable"}
                 </p>
               </div>
               <div className="flex gap-2">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleEdit(room)}
-                  className="rounded-3xl border border-cashmere-700 px-4 py-2 text-sm text-white"
                 >
                   Edit
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="danger"
+                  size="sm"
                   onClick={() => handleDelete(room.id)}
-                  className="rounded-3xl bg-crimson px-4 py-2 text-sm text-white"
                 >
                   Delete
-                </button>
+                </Button>
               </div>
             </div>
           ))}

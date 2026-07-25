@@ -1,16 +1,27 @@
 # Example Environment Variables Template
 # Copy this file to application-local.yml or define these as system environment variables
 
+# Example configuration for local development.
+# Copy this file to application-local.yml or set the equivalent environment variables.
 spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/hotel_reservation
 
+  # SMTP configuration — choose one method and set credentials via environment variables
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: your_email@gmail.com
-    password: your_app_password
+    # Option A: Gmail (requires app-password or OAuth)
+    # host: smtp.gmail.com
+    # port: 587
+    # username: your_email@gmail.com
+    # password: your_app_password
+
+    # Option B: Mailtrap (recommended for safe testing)
+    # Sign up at https://mailtrap.io and use the SMTP credentials shown for your inbox
+    host: smtp.mailtrap.io
+    port: 2525
+    username: your_mailtrap_user
+    password: your_mailtrap_password
 
 jwt:
   secret: GenerateARandomStringForLocalDevelopment
@@ -19,3 +30,13 @@ jwt:
 app:
   mail:
     from: noreply@grandreserve.com
+
+# Quick test (dev): send a test email using the dev endpoint after starting the app
+# 1) Ensure SMTP values are set in environment or application-local.yml
+# 2) Start the backend: `./mvnw spring-boot:run`
+# 3) Trigger a test email (replace recipient):
+#
+# curl -X POST http://localhost:8081/api/dev/send-test-email \
+#   -H "Content-Type: application/json" \
+#   -d '{"to":"you@example.com","subject":"Dev test","html":"<h3>Hello from dev</h3>"}'
+

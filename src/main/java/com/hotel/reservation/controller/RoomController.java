@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/rooms")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class RoomController {
 
@@ -38,7 +37,9 @@ public class RoomController {
 
     @PostMapping
     public Room createRoom(@RequestBody Room room) {
-        room.setStatus("Available");
+        if (room.getStatus() == null || room.getStatus().isBlank()) {
+            room.setStatus("Available");
+        }
         return roomService.saveRoom(room);
     }
 

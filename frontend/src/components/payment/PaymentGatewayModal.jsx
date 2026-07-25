@@ -54,7 +54,7 @@ export default function PaymentGatewayModal({
       isOpen
       onClose={onClose}
       title="Confirm Your Payment"
-      description="Secure Payment Gateway — Reservation Checkout"
+      description="Secure Payment Gateway Reservation Checkout"
       size="md"
     >
       <form onSubmit={handlePay}>
@@ -70,7 +70,8 @@ export default function PaymentGatewayModal({
                   Cardholder Information
                 </h3>
                 <p className="mt-1 text-xs text-slate-400">
-                  Enter your payment card details below to complete your booking.
+                  Enter your payment card details below to complete your
+                  booking.
                 </p>
 
                 {isDone ? (
@@ -89,7 +90,9 @@ export default function PaymentGatewayModal({
                       required
                       placeholder="Alex Johnson"
                       value={card.name}
-                      onChange={(e) => setCard({ ...card, name: e.target.value })}
+                      onChange={(e) =>
+                        setCard({ ...card, name: e.target.value })
+                      }
                     />
 
                     <Input
@@ -145,8 +148,18 @@ export default function PaymentGatewayModal({
               </div>
 
               <div className="rounded border border-cashmere-700 bg-heritage-900 p-3 text-xs text-slate-400 flex items-center gap-2">
-                <svg className="w-4 h-4 text-brass" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                <svg
+                  className="w-4 h-4 text-brass"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
                 </svg>
                 <span>256-bit encrypted SSL secure payment gateway</span>
               </div>
@@ -168,7 +181,8 @@ export default function PaymentGatewayModal({
                       Room Selected
                     </p>
                     <p className="mt-1 font-semibold text-white text-base">
-                      Room {room?.roomNumber || "301"} — {room?.roomType || "Standard Suite"}
+                      Room {room?.roomNumber || "301"} -{" "}
+                      {room?.roomType || "Standard Suite"}
                     </p>
                   </div>
 
@@ -194,7 +208,8 @@ export default function PaymentGatewayModal({
                 </div>
 
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Your payment info is processed securely and is never stored locally.
+                  Your payment info is processed securely and is never stored
+                  locally.
                 </p>
               </div>
             </Card>
@@ -216,7 +231,9 @@ export default function PaymentGatewayModal({
               loading={isProcessing}
               disabled={isProcessing || isDone}
             >
-              {isProcessing ? "Processing..." : `Pay ${formatLKR(booking.totalAmount)}`}
+              {isProcessing
+                ? "Processing..."
+                : `Pay ${formatLKR(booking.totalAmount)}`}
             </Button>
           </ModalFooter>
         </ModalContent>

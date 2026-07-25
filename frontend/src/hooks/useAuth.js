@@ -1,12 +1,7 @@
-// External
 import { useState } from "react";
-// Internal — constants & services
 import { LOCAL_STORAGE_KEYS, TOAST_TYPES } from "../config/constants";
 import { loginUser, registerCustomer } from "../services/api";
 
-// Pure utilities (no hook dependency)
-
-/** Decodes a JWT payload without verifying the signature. Returns null on failure. */
 const parseJwt = (token) => {
   try {
     return JSON.parse(atob(token.split(".")[1]));
@@ -15,10 +10,7 @@ const parseJwt = (token) => {
   }
 };
 
-/** Returns true when the roles string contains the ADMIN authority. */
 const validateAdminRole = (roles) => roles.includes("ROLE_ADMIN");
-
-// Session persistence helpers
 
 const persistSession = (token, email, fullName, role) => {
   localStorage.setItem(LOCAL_STORAGE_KEYS.JWT_TOKEN, token);
@@ -33,8 +25,6 @@ const clearSession = () => {
   localStorage.removeItem(LOCAL_STORAGE_KEYS.USER_FULL_NAME);
   localStorage.removeItem(LOCAL_STORAGE_KEYS.USER_ROLE);
 };
-
-// Hook
 
 export function useAuth(showToast) {
   const storedToken = localStorage.getItem(LOCAL_STORAGE_KEYS.JWT_TOKEN) || "";
@@ -81,12 +71,28 @@ export function useAuth(showToast) {
     }
   };
 
-  const handleCustomerRegister = async (fullName, email, password, nicPassport, phone, address) => {
+  const handleCustomerRegister = async (
+    fullName,
+    email,
+    password,
+    nicPassport,
+    phone,
+    address,
+  ) => {
     try {
-      await registerCustomer(fullName, email, password, nicPassport, phone, address);
-      showToast("Account created. Please sign in.", TOAST_TYPES.SUCCESS);
+      const response = await registerCustomer(
+        fullName,
+        email,
+        password,
+        nicPassport,
+        phone,
+        address,
+      );
+      showToast("Account created successfully.", TOAST_TYPES.SUCCESS);
+      return response;
     } catch (err) {
       showToast(err.message, TOAST_TYPES.ERROR);
+      return null;
     }
   };
 

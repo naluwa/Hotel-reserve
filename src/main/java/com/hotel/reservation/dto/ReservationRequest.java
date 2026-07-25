@@ -15,5 +15,6 @@ public class ReservationRequest {
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private int numberOfGuests;
+    private String status;
     private String paymentStatus;
 }

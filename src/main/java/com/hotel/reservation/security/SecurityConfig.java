@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import com.hotel.reservation.service.CustomUserDetailsService;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -25,6 +27,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,6 +39,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/rooms").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/rooms/available").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/messages/my").hasAnyRole("ADMIN", "CUSTOMER")
+                .requestMatchers(HttpMethod.POST, "/api/messages/*/reply").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.OPTIONS, "/api/messages", "/api/messages/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/messages").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/messages", "/api/messages/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/messages/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/rooms").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/rooms/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").hasRole("ADMIN")
@@ -52,26 +61,28 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             );
 
+        http.authenticationProvider(daoAuthenticationProvider());
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(customUserDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
+
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-            "http://localhost:5173",
-            "http://localhost:5174",
-            "http://localhost:4173",
-            "http://localhost:3000",
-            "http://127.0.0.1:5173",
-            "http://127.0.0.1:5174",
-            "http://127.0.0.1:4173",
-            "http://127.0.0.1:3000"
-        ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
+        config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;

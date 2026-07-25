@@ -34,6 +34,19 @@ export default function CustomerBookingsPanel({
     if (authToken) loadBookings();
   }, [authToken, loadBookings]);
 
+  const getBookingStatusLabel = (status) => {
+    switch (status) {
+      case "Reserved":
+        return "Room ready";
+      case "Checked In":
+        return "Checked In";
+      case "Checked Out":
+        return "Checked Out";
+      default:
+        return status || "Unknown";
+    }
+  };
+
   const handleCancelBooking = (id) => {
     setPendingCancelBookingId(id);
   };
@@ -115,7 +128,7 @@ export default function CustomerBookingsPanel({
                       {room?.type || "Guest stay"}
                     </h2>
                     <p className="mt-2 text-slate-400 text-sm">
-                      {booking.checkInDate} — {booking.checkOutDate}
+                      {booking.checkInDate} - {booking.checkOutDate}
                     </p>
                   </div>
                   <div className="rounded-3xl bg-heritage-900 px-4 py-3 text-right">
@@ -128,23 +141,22 @@ export default function CustomerBookingsPanel({
                   </div>
                 </div>
 
-                <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
                   <div className="rounded-lg border border-cashmere-700 bg-heritage-900 p-4 text-sm text-slate-300">
                     <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">
                       Payment
                     </p>
                     <p className="mt-2">
-                      <Badge variant={booking.paymentStatus === PAYMENT_STATUS.PAID ? "success" : "warning"} size="sm">
+                      <Badge
+                        variant={
+                          booking.paymentStatus === PAYMENT_STATUS.PAID
+                            ? "success"
+                            : "warning"
+                        }
+                        size="sm"
+                      >
                         {booking.paymentStatus}
                       </Badge>
-                    </p>
-                  </div>
-                  <div className="rounded-lg border border-cashmere-700 bg-heritage-900 p-4 text-sm text-slate-300">
-                    <p className="text-[10px] uppercase tracking-[0.35em] text-slate-400">
-                      Guest email
-                    </p>
-                    <p className="mt-2 text-white font-medium">
-                      {booking.customerEmail || "Not provided"}
                     </p>
                   </div>
                   <div className="rounded-lg border border-cashmere-700 bg-heritage-900 p-4 text-sm text-slate-300">
@@ -152,9 +164,7 @@ export default function CustomerBookingsPanel({
                       Status
                     </p>
                     <p className="mt-2 text-white font-medium">
-                      {room?.status === "Available"
-                        ? "Room ready"
-                        : "Check availability"}
+                      {getBookingStatusLabel(booking.status)}
                     </p>
                   </div>
                 </div>

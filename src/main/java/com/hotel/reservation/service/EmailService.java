@@ -11,6 +11,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.HtmlUtils;
 
 import java.nio.charset.StandardCharsets;
 
@@ -23,6 +25,18 @@ public class EmailService {
 
     @Value("${app.mail.from:noreply@grandreserve.com}")
     private String fromAddress;
+
+    @Value("${spring.mail.host:}")
+    private String smtpHost;
+
+    @Value("${spring.mail.username:}")
+    private String smtpUsername;
+
+    @Value("${spring.mail.password:}")
+    private String smtpPassword;
+
+    @Value("${app.mail.admin-to:${app.mail.from:noreply@grandreserve.com}}")
+    private String adminEmail;
 
     public boolean sendBookingConfirmation(Reservation reservation, Room room) {
         if (reservation == null || reservation.getCustomerEmail() == null || reservation.getCustomerEmail().isBlank()) {
@@ -95,8 +109,73 @@ public class EmailService {
         return sendHtmlEmail(recipientEmail, subject, htmlContent);
     }
 
+    public boolean sendGuestMessageNotification(com.hotel.reservation.model.GuestMessage message) {
+        if (message == null) {
+            log.warn("Cannot send guest message notification: message payload is missing.");
+            return false;
+        }
+
+        if (!StringUtils.hasText(message.getSenderEmail())) {
+            log.warn("Cannot send guest message notification: sender email is missing.");
+            return false;
+        }
+
+        String recipientEmail = StringUtils.hasText(adminEmail) ? adminEmail : fromAddress;
+        String subject = StringUtils.hasText(message.getSubject())
+                ? "New guest message: " + message.getSubject()
+                : "New guest message";
+
+        String htmlBody = buildGuestMessageHtml(message);
+        return sendHtmlEmail(recipientEmail, subject, htmlBody);
+    }
+
+    public boolean sendAdminReplyNotification(com.hotel.reservation.model.GuestMessage message) {
+        if (message == null || !StringUtils.hasText(message.getSenderEmail())) {
+            log.warn("Cannot send admin reply notification: recipient email is missing.");
+            return false;
+        }
+
+        String recipientEmail = message.getSenderEmail();
+        String subject = "Reply to your inquiry: " + (StringUtils.hasText(message.getSubject()) ? message.getSubject() : "Grand Reserve Colombo");
+
+        String guestName = StringUtils.hasText(message.getSenderName()) ? message.getSenderName() : "Valued Guest";
+        String replyText = StringUtils.hasText(message.getReplyMessage()) ? message.getReplyMessage() : "";
+        String originalMessage = StringUtils.hasText(message.getMessage()) ? message.getMessage() : "";
+
+        String htmlBody = String.format(
+                "<h2>Dear %s,</h2>" +
+                "<p>Thank you for reaching out to Grand Reserve Colombo Concierge. Here is our response to your message:</p>" +
+                "<blockquote style=\"border-left: 3px solid #c5a880; padding-left: 12px; font-style: italic; color: #555;\">%s</blockquote>" +
+                "<hr style=\"border: none; border-top: 1px solid #eee; margin: 16px 0;\"/>" +
+                "<p><strong>Your original message:</strong></p>" +
+                "<p style=\"color: #777;\">%s</p>" +
+                "<p>Warm regards,<br/>Concierge Team<br/>Grand Reserve Colombo</p>",
+                HtmlUtils.htmlEscape(guestName),
+                HtmlUtils.htmlEscape(replyText).replace("\n", "<br/>"),
+                HtmlUtils.htmlEscape(originalMessage).replace("\n", "<br/>")
+        );
+
+        return sendHtmlEmail(recipientEmail, subject, htmlBody);
+    }
+
     public boolean sendHtmlEmail(String toAddress, String subject, String htmlBody) {
         log.info("Preparing to send HTML email to: {}", toAddress);
+        if (!StringUtils.hasText(toAddress)) {
+            log.warn("Cannot send email because no recipient address was provided.");
+            return false;
+        }
+        if (!StringUtils.hasText(subject)) {
+            subject = "No subject";
+        }
+        if (!StringUtils.hasText(htmlBody)) {
+            log.warn("Cannot send email because the message body is empty.");
+            return false;
+        }
+        if (!StringUtils.hasText(smtpHost) || !StringUtils.hasText(smtpUsername) || !StringUtils.hasText(smtpPassword)) {
+            log.warn("SMTP is not fully configured (spring.mail.host/username/password). Email will not be sent.");
+            log.debug("Email preview to {} with subject '{}': {}", toAddress, subject, htmlBody);
+            return false;
+        }
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -113,6 +192,26 @@ public class EmailService {
                     toAddress, ex.getMessage(), toAddress, subject, htmlBody);
             return false;
         }
+    }
+
+    private String buildGuestMessageHtml(com.hotel.reservation.model.GuestMessage message) {
+        String senderName = StringUtils.hasText(message.getSenderName()) ? message.getSenderName() : "Guest";
+        String senderEmail = StringUtils.hasText(message.getSenderEmail()) ? message.getSenderEmail() : "Not provided";
+        String subject = StringUtils.hasText(message.getSubject()) ? message.getSubject() : "No subject";
+        String messageBody = StringUtils.hasText(message.getMessage()) ? message.getMessage() : "";
+
+        String escapedMessage = HtmlUtils.htmlEscape(messageBody).replace("\n", "<br/>");
+        return String.format(
+                "<h2>New guest message received</h2>" +
+                        "<p><strong>Name:</strong> %s</p>" +
+                        "<p><strong>Email:</strong> %s</p>" +
+                        "<p><strong>Subject:</strong> %s</p>" +
+                        "<p><strong>Message:</strong><br/>%s</p>",
+                HtmlUtils.htmlEscape(senderName),
+                HtmlUtils.htmlEscape(senderEmail),
+                HtmlUtils.htmlEscape(subject),
+                escapedMessage
+        );
     }
 
     private String loadTemplate(String path) {
