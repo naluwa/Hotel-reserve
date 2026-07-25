@@ -12,6 +12,7 @@ export default function Navigation({
   isAdmin,
   userFullName,
   handleLogout,
+  onCustomerAuth,
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -19,6 +20,19 @@ export default function Navigation({
     setView(VIEWS.CUSTOMER);
     setFilteredRooms(rooms);
     setMobileOpen(false);
+  };
+
+  const navigateTo = (
+    targetView,
+    { closeMobile = false, scroll = true } = {},
+  ) => {
+    setView(targetView);
+    if (closeMobile) setMobileOpen(false);
+    if (typeof window !== "undefined" && scroll) {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 40);
+    }
   };
 
   const handleRoomsClick = () => {
@@ -113,21 +127,21 @@ export default function Navigation({
           <button
             type="button"
             className={navLinkClass}
-            onClick={() => setView(VIEWS.ABOUT)}
+            onClick={() => navigateTo(VIEWS.ABOUT)}
           >
             About
           </button>
           <button
             type="button"
             className={navLinkClass}
-            onClick={() => setView(VIEWS.GALLERY)}
+            onClick={() => navigateTo(VIEWS.GALLERY)}
           >
             Gallery
           </button>
           <button
             type="button"
             className={navLinkClass}
-            onClick={() => setView(VIEWS.CONTACT)}
+            onClick={() => navigateTo(VIEWS.CONTACT)}
           >
             Contact
           </button>
@@ -140,20 +154,22 @@ export default function Navigation({
                 <>
                   <button
                     type="button"
-                    className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] transition ${view === VIEWS.CUSTOMER_BOOKINGS
+                    className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] transition ${
+                      view === VIEWS.CUSTOMER_BOOKINGS
                         ? "border-brass bg-brass text-heritage-900"
                         : "border-brass/30 bg-white/5 text-white hover:border-brass hover:text-brass"
-                      }`}
+                    }`}
                     onClick={() => setView(VIEWS.CUSTOMER_BOOKINGS)}
                   >
                     My Bookings
                   </button>
                   <button
                     type="button"
-                    className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] transition ${view === VIEWS.CUSTOMER_MESSAGES
+                    className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] transition ${
+                      view === VIEWS.CUSTOMER_MESSAGES
                         ? "border-brass bg-brass text-heritage-900"
                         : "border-brass/30 bg-white/5 text-white hover:border-brass hover:text-brass"
-                      }`}
+                    }`}
                     onClick={() => setView(VIEWS.CUSTOMER_MESSAGES)}
                   >
                     Messages
@@ -193,7 +209,7 @@ export default function Navigation({
               <button
                 type="button"
                 className="rounded-full bg-brass px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-heritage-900 shadow-sm transition hover:bg-brass-light"
-                onClick={() => setView(VIEWS.CUSTOMER_LOGIN)}
+                onClick={() => onCustomerAuth?.("login")}
               >
                 Sign In
               </button>
@@ -216,8 +232,7 @@ export default function Navigation({
               type="button"
               className="w-full text-left text-sm font-medium text-slate-300 transition hover:text-white"
               onClick={() => {
-                setView(VIEWS.ABOUT);
-                setMobileOpen(false);
+                navigateTo(VIEWS.ABOUT, { closeMobile: true });
               }}
             >
               About
@@ -226,8 +241,7 @@ export default function Navigation({
               type="button"
               className="w-full text-left text-sm font-medium text-slate-300 transition hover:text-white"
               onClick={() => {
-                setView(VIEWS.GALLERY);
-                setMobileOpen(false);
+                navigateTo(VIEWS.GALLERY, { closeMobile: true });
               }}
             >
               Gallery
@@ -236,8 +250,7 @@ export default function Navigation({
               type="button"
               className="w-full text-left text-sm font-medium text-slate-300 transition hover:text-white"
               onClick={() => {
-                setView(VIEWS.CONTACT);
-                setMobileOpen(false);
+                navigateTo(VIEWS.CONTACT, { closeMobile: true });
               }}
             >
               Contact
@@ -310,7 +323,7 @@ export default function Navigation({
                   type="button"
                   className="w-full rounded-full bg-brass px-4 py-2 text-left text-xs font-bold uppercase tracking-[0.14em] text-heritage-900 shadow-sm transition hover:bg-brass-light"
                   onClick={() => {
-                    setView(VIEWS.CUSTOMER_LOGIN);
+                    onCustomerAuth?.("login");
                     setMobileOpen(false);
                   }}
                 >
