@@ -20,6 +20,7 @@ A full-stack hotel reservation web application that enables guests to search and
 - [Security](#security)
 - [Future Improvements](#future-improvements)
 - [Notes](#notes)
+- [Screenshots](#screenshots)
 - [License](#license)
 
 ---
