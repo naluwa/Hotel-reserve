@@ -145,7 +145,7 @@ export default function RoomCard({
         <div
           className={`absolute left-4 top-4 rounded-2xl border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
             isAvailable
-              ? "border-emerald-200/90 bg-green-600 text-emerald-50 shadow-[0_0_24px_rgba(112,211,158,0.28)]"
+              ? "border-emerald-400/70 bg-black text-green-500 shadow-[0_0_24px_rgba(112,211,158,0.18)]"
               : "border-white/10 bg-slate-950/80 text-slate-200"
           }`}
           style={
