@@ -36,4 +36,19 @@ public class GuestMessage {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public void send() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        this.read = false;
+        this.replied = false;
+    }
+
+    public void reply(String replyText) {
+        this.replyMessage = replyText;
+        this.replied = true;
+        this.read = true;
+        this.repliedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 }

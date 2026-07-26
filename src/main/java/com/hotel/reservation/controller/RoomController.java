@@ -17,16 +17,16 @@ public class RoomController {
     private final RoomService roomService;
 
     @GetMapping
-    public List<Room> getRooms() {
-        return roomService.getAllRooms();
+    public ResponseEntity<List<Room>> getRooms() {
+        return ResponseEntity.ok(roomService.getAllRooms());
     }
 
     @GetMapping("/available")
-    public List<Room> getAvailableRooms(
-            @RequestParam(value = "checkIn", required = false) String checkIn,
-            @RequestParam(value = "checkOut", required = false) String checkOut
+    public ResponseEntity<List<Room>> getAvailableRooms(
+            @RequestParam(required = false) String checkIn,
+            @RequestParam(required = false) String checkOut
     ) {
-        return roomService.findAvailableRooms(checkIn, checkOut);
+        return ResponseEntity.ok(roomService.findAvailableRooms(checkIn, checkOut));
     }
 
     @GetMapping("/{id}")
@@ -36,20 +36,13 @@ public class RoomController {
     }
 
     @PostMapping
-    public Room createRoom(@RequestBody Room room) {
-        if (room.getStatus() == null || room.getStatus().isBlank()) {
-            room.setStatus("Available");
-        }
-        return roomService.saveRoom(room);
+    public ResponseEntity<Room> createRoom(@RequestBody Room room) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(roomService.saveRoom(room));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Room> updateRoom(@PathVariable String id, @RequestBody Room updated) {
-        try {
-            return ResponseEntity.ok(roomService.updateRoom(id, updated));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        return ResponseEntity.ok(roomService.updateRoom(id, updated));
     }
 
     @DeleteMapping("/{id}")

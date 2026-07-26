@@ -5,6 +5,7 @@ import com.hotel.reservation.dto.LoginRequest;
 import com.hotel.reservation.dto.RegisterRequest;
 import com.hotel.reservation.security.JwtTokenProvider;
 import com.hotel.reservation.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,19 +26,19 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwt = tokenProvider.generateToken(authentication);
-        AuthResponse response = authService.buildAuthResponse(jwt, request.getUsername(), authentication);
+        AuthResponse response = authService.buildAuthResponse(jwt, request.getEmail(), authentication);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
         var customer = authService.registerCustomer(request);
         return ResponseEntity.ok(Map.of(
                 "id", customer.getId(),

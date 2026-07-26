@@ -8,9 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,9 +23,11 @@ public class RoomService {
     private final ReservationRepository reservationRepository;
 
     public List<Room> getAllRooms() {
-        return roomRepository.findAll().stream()
-                .map(this::normalizeRoom)
-                .collect(Collectors.toList());
+        List<Room> rooms = new ArrayList<>();
+        for (Room room : roomRepository.findAll()) {
+            rooms.add(normalizeRoom(room));
+        }
+        return rooms;
     }
 
     public Room getRoomById(String id) {
@@ -34,6 +37,7 @@ public class RoomService {
     }
 
     public Room saveRoom(Room room) {
+        // normalizeRoom sets status to "Available" when null/blank - business default lives here
         return roomRepository.save(normalizeRoom(room));
     }
 
@@ -65,9 +69,13 @@ public class RoomService {
 
     public List<Room> findAvailableRooms(String checkIn, String checkOut) {
         if ((checkIn == null || checkIn.isBlank()) && (checkOut == null || checkOut.isBlank())) {
-            return getAllRooms().stream()
-                    .filter(room -> "Available".equalsIgnoreCase(room.getStatus()))
-                    .collect(Collectors.toList());
+            List<Room> availableRooms = new ArrayList<>();
+            for (Room room : getAllRooms()) {
+                if ("Available".equalsIgnoreCase(room.getStatus())) {
+                    availableRooms.add(room);
+                }
+            }
+            return availableRooms;
         }
 
         LocalDate start;
@@ -88,20 +96,26 @@ public class RoomService {
             end = start.plusDays(1);
         }
 
-        Set<String> blockedRoomIds = reservationRepository
-                .findByCheckInDateBeforeAndCheckOutDateAfterAndStatusIn(
-                        end,
-                        start,
-                        ACTIVE_RESERVATION_STATUSES
-                )
-                .stream()
-                .map(Reservation::getRoomId)
-                .collect(Collectors.toSet());
-        return roomRepository.findAll().stream()
-                .map(this::normalizeRoom)
-                .filter(room -> "Available".equalsIgnoreCase(room.getStatus()))
-                .filter(room -> !blockedRoomIds.contains(room.getId()))
-                .collect(Collectors.toList());
+        Set<String> blockedRoomIds = new HashSet<>();
+        for (Reservation reservation : reservationRepository.findByCheckInDateBeforeAndCheckOutDateAfterAndStatusIn(
+                end,
+                start,
+                ACTIVE_RESERVATION_STATUSES
+        )) {
+            if (reservation.getRoomId() != null) {
+                blockedRoomIds.add(reservation.getRoomId());
+            }
+        }
+
+        List<Room> availableRooms = new ArrayList<>();
+        for (Room room : roomRepository.findAll()) {
+            Room normalizedRoom = normalizeRoom(room);
+            if ("Available".equalsIgnoreCase(normalizedRoom.getStatus())
+                    && !blockedRoomIds.contains(normalizedRoom.getId())) {
+                availableRooms.add(normalizedRoom);
+            }
+        }
+        return availableRooms;
     }
 
     private Room normalizeRoom(Room room) {

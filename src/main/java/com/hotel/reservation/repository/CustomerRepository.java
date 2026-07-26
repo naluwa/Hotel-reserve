@@ -1,5 +1,3 @@
-
-
 package com.hotel.reservation.repository;
 
 import com.hotel.reservation.model.Customer;

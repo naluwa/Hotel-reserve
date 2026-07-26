@@ -12,17 +12,25 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
+
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User u = userRepository.findByUsername(username).orElse(null);
-        if (u != null) {
+        String normalizedUsername = username == null ? "" : username.trim();
+        if (normalizedUsername.isBlank()) {
+            throw new UsernameNotFoundException("No user: " + username);
+        }
+
+        Optional<User> adminUser = userRepository.findByUsername(normalizedUsername);
+        if (adminUser.isPresent()) {
+            User u = adminUser.get();
             return new org.springframework.security.core.userdetails.User(
                 u.getUsername(),
                 u.getPassword(),
@@ -30,13 +38,17 @@ public class CustomUserDetailsService implements UserDetailsService {
             );
         }
 
-        Customer customer = customerRepository.findByEmail(username)
-            .orElseThrow(() -> new UsernameNotFoundException("No user: " + username));
-        String pwd = customer.getPassword() != null ? customer.getPassword() : "";
-        return new org.springframework.security.core.userdetails.User(
-            customer.getEmail(),
-            pwd,
-            List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
-        );
+        Optional<Customer> customer = customerRepository.findByEmail(normalizedUsername);
+        if (customer.isPresent()) {
+            Customer existingCustomer = customer.get();
+            String pwd = existingCustomer.getPassword() != null ? existingCustomer.getPassword() : "";
+            return new org.springframework.security.core.userdetails.User(
+                existingCustomer.getEmail(),
+                pwd,
+                List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
+            );
+        }
+
+        throw new UsernameNotFoundException("No user: " + username);
     }
 }

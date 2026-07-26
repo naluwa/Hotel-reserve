@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -15,6 +16,7 @@ import java.util.List;
 @Builder
 @Document(collection = "rooms")
 public class Room {
+
     @Id
     private String id;
 
@@ -28,4 +30,17 @@ public class Room {
     private String bedType;
     private String capacity;
     private List<String> amenities;
+
+    public boolean checkAvailability(LocalDate checkIn, LocalDate checkOut) {
+        if (checkIn == null || checkOut == null || !checkOut.isAfter(checkIn)) {
+            return false;
+        }
+        return "Available".equalsIgnoreCase(this.status);
+    }
+
+    public void updateStatus(String newStatus) {
+        if (newStatus != null && !newStatus.isBlank()) {
+            this.status = newStatus;
+        }
+    }
 }

@@ -1,12 +1,7 @@
 package com.hotel.reservation.config;
 
 import com.hotel.reservation.model.Room;
-import com.hotel.reservation.repository.CustomerRepository;
-import com.hotel.reservation.repository.GuestMessageRepository;
-import com.hotel.reservation.repository.PaymentRepository;
-import com.hotel.reservation.repository.ReservationRepository;
 import com.hotel.reservation.repository.RoomRepository;
-import com.hotel.reservation.repository.UserRepository;
 import com.hotel.reservation.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,26 +16,14 @@ import java.util.List;
 public class DatabaseInitializer implements CommandLineRunner {
 
     private final AuthService authService;
-    private final UserRepository userRepository;
-    private final CustomerRepository customerRepository;
     private final RoomRepository roomRepository;
-    private final ReservationRepository reservationRepository;
-    private final PaymentRepository paymentRepository;
-    private final GuestMessageRepository guestMessageRepository;
 
     @Override
     public void run(String... args) throws Exception {
-        // Clean all application data before seeding default state.
-        guestMessageRepository.deleteAll();
-        reservationRepository.deleteAll();
-        paymentRepository.deleteAll();
-        roomRepository.deleteAll();
-        customerRepository.deleteAll();
-        userRepository.deleteAll();
+        authService.ensureDefaultAdmin("admin@example.com", "admin123", "System Administrator");
 
-        authService.createAdminIfMissing("admin@example.com", "admin123", "System Administrator");
-
-        roomRepository.saveAll(List.of(
+        if (roomRepository.count() == 0) {
+            roomRepository.saveAll(List.of(
                 Room.builder()
                         .roomNumber("101")
                         .roomType("Single")
@@ -89,8 +72,9 @@ public class DatabaseInitializer implements CommandLineRunner {
                         .capacity("4 Guests")
                         .amenities(List.of("Free Wi-Fi", "Private Lounge", "Complimentary Champagne"))
                         .build()
-        ));
+            ));
 
-        log.info("Database reset and seeded default admin and sample rooms.");
+            log.info("Default admin created and sample rooms seeded only when empty.");
+        }
     }
 }

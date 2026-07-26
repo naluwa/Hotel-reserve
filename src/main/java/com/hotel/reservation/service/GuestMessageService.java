@@ -25,19 +25,17 @@ public class GuestMessageService {
                 .subject(request.getSubject())
                 .message(request.getMessage())
                 .source("guest")
-                .read(false)
-                .replied(false)
                 .emailSent(false)
                 .emailStatus("PENDING")
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
 
+        message.send();
+
         GuestMessage savedMessage = guestMessageRepository.save(message);
-        boolean emailSent = emailService.sendGuestMessageNotification(savedMessage);
-        savedMessage.setEmailSent(emailSent);
-        savedMessage.setEmailStatus(emailSent ? "SENT" : "FAILED");
-        if (emailSent) {
+        boolean wasEmailSent = emailService.sendGuestMessageNotification(savedMessage);
+        savedMessage.setEmailSent(wasEmailSent);
+        savedMessage.setEmailStatus(wasEmailSent ? "SENT" : "FAILED");
+        if (wasEmailSent) {
             savedMessage.setEmailSentAt(LocalDateTime.now());
         }
         return guestMessageRepository.save(savedMessage);
@@ -62,16 +60,20 @@ public class GuestMessageService {
     public GuestMessage replyToMessage(String id, String replyText, String repliedBy) {
         GuestMessage message = guestMessageRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Message not found"));
-        
-        message.setReplyMessage(replyText);
-        message.setRepliedBy(repliedBy != null ? repliedBy : "Concierge");
-        message.setRepliedAt(LocalDateTime.now());
-        message.setReplied(true);
-        message.setRead(true);
-        message.setUpdatedAt(LocalDateTime.now());
+
+        message.reply(replyText);
+        String replyAuthor = repliedBy != null ? repliedBy : "Concierge";
+        message.setRepliedBy(replyAuthor);
 
         GuestMessage saved = guestMessageRepository.save(message);
         emailService.sendAdminReplyNotification(saved);
         return saved;
+    }
+
+    public void deleteMessage(String id) {
+        if (!guestMessageRepository.existsById(id)) {
+            throw new IllegalArgumentException("Message not found");
+        }
+        guestMessageRepository.deleteById(id);
     }
 }

@@ -1,5 +1,7 @@
 package com.hotel.reservation.service;
 
+import com.hotel.reservation.dto.PaymentRequest;
+import com.hotel.reservation.exception.ResourceNotFoundException;
 import com.hotel.reservation.model.Payment;
 import com.hotel.reservation.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,26 +20,37 @@ public class PaymentService {
         return paymentRepository.findAll();
     }
 
-    public Payment savePayment(Payment payment) {
+    public Payment createPayment(PaymentRequest request) {
+        Payment payment = Payment.builder()
+                .reservationId(request.getReservationId())
+                .amount(request.getAmount())
+                .paymentDate(request.getPaymentDate())
+                .paymentMethod(request.getPaymentMethod())
+                .paymentStatus(request.getPaymentStatus())
+                .build();
         return paymentRepository.save(payment);
     }
 
-    public Payment updatePayment(String id, Payment updated) {
-        return paymentRepository.findById(id)
-                .map(existing -> {
-                    existing.setAmount(updated.getAmount());
-                    existing.setPaymentDate(updated.getPaymentDate());
-                    existing.setPaymentMethod(updated.getPaymentMethod());
-                    existing.setPaymentStatus(updated.getPaymentStatus());
-                    
-                    Payment savedPayment = paymentRepository.save(existing);
-                    
-                    if ("Paid".equals(updated.getPaymentStatus()) && existing.getReservationId() != null) {
-                        reservationService.updatePaymentStatus(existing.getReservationId(), "PAID");
-                    }
-                    
-                    return savedPayment;
-                })
-                .orElseThrow();
+    public Payment updatePayment(String id, PaymentRequest request) {
+        Payment existing = paymentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment", "id", id));
+
+        existing.setAmount(request.getAmount());
+        existing.setPaymentDate(request.getPaymentDate());
+        existing.setPaymentMethod(request.getPaymentMethod());
+
+        String status = request.getPaymentStatus();
+        if ("PAID".equalsIgnoreCase(status)) {
+            existing.processPayment();
+            if (existing.getReservationId() != null) {
+                reservationService.updatePaymentStatus(existing.getReservationId(), "PAID");
+            }
+        } else if ("REFUNDED".equalsIgnoreCase(status)) {
+            existing.refund();
+        } else {
+            existing.setPaymentStatus(status);
+        }
+
+        return paymentRepository.save(existing);
     }
 }

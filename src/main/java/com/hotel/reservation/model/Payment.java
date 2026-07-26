@@ -15,6 +15,7 @@ import java.time.LocalDate;
 @Builder
 @Document(collection = "payments")
 public class Payment {
+
     @Id
     private String id;
 
@@ -23,4 +24,17 @@ public class Payment {
     private LocalDate paymentDate;
     private String paymentMethod;
     private String paymentStatus;
+
+    public boolean processPayment() {
+        if ("PAID".equalsIgnoreCase(this.paymentStatus)) {
+            return false;
+        }
+        this.paymentStatus = "PAID";
+        this.paymentDate = LocalDate.now();
+        return true;
+    }
+
+    public void refund() {
+        this.paymentStatus = "REFUNDED";
+    }
 }

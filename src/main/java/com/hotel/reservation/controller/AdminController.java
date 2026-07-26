@@ -1,71 +1,38 @@
 package com.hotel.reservation.controller;
 
+import com.hotel.reservation.dto.AdminCreateRequest;
 import com.hotel.reservation.model.User;
-import com.hotel.reservation.repository.UserRepository;
+import com.hotel.reservation.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     @GetMapping
-    public List<User> getAdminUsers() {
-        return userRepository.findAll();
+    public ResponseEntity<List<User>> getAdminUsers() {
+        return ResponseEntity.ok(authService.getAllAdminUsers());
     }
 
     @PostMapping
-    public ResponseEntity<?> createAdminUser(@RequestBody Map<String, String> request) {
-        String email = request.get("email");
-        if (email == null || email.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Admin email is required."));
-        }
-
-        if (userRepository.existsByUsername(email)) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Administrator already exists."));
-        }
-
-        String fullName = request.get("fullName");
-        if (fullName == null || fullName.isBlank()) {
-            fullName = email.contains("@") ? email.substring(0, email.indexOf("@")) : email;
-        }
-
-        String password = request.get("password");
-        if (password == null || password.isBlank()) {
-            password = "PENDING_SETUP_" + System.currentTimeMillis();
-        }
-
-        User user = new User();
-        user.setUsername(email);
-        user.setFullName(fullName);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRole("ADMIN");
-
-        User saved = userRepository.save(user);
-        return ResponseEntity.ok(saved);
+    public ResponseEntity<User> createAdminUser(@Valid @RequestBody AdminCreateRequest request) {
+        User saved = authService.createAdminUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteAdminUser(@PathVariable String id, Authentication authentication) {
-        User existing = userRepository.findById(id).orElse(null);
-        if (existing == null) {
-            return ResponseEntity.notFound().build();
-        }
-        if (existing.getUsername().equals(authentication.getName())) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Administrators cannot remove their own account."));
-        }
-
-        userRepository.deleteById(id);
+    public ResponseEntity<Void> deleteAdminUser(@PathVariable String id, Authentication authentication) {
+        authService.deleteAdminUser(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }

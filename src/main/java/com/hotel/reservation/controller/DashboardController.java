@@ -1,29 +1,22 @@
 package com.hotel.reservation.controller;
 
 import com.hotel.reservation.dto.DashboardResponse;
-import com.hotel.reservation.repository.CustomerRepository;
-import com.hotel.reservation.repository.ReservationRepository;
-import com.hotel.reservation.repository.RoomRepository;
+import com.hotel.reservation.service.DashboardService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
 public class DashboardController {
 
-    private final RoomRepository roomRepository;
-    private final CustomerRepository customerRepository;
-    private final ReservationRepository reservationRepository;
+    private final DashboardService dashboardService;
 
     @GetMapping("/summary")
-    public DashboardResponse getSummary() {
-        long totalRooms = roomRepository.count();
-        long availableRooms = roomRepository.countByStatus("Available");
-        long reservedRooms = roomRepository.countByStatus("Reserved");
-        long occupiedRooms = roomRepository.countByStatus("Occupied");
-        long totalCustomers = customerRepository.count();
-        long activeReservations = reservationRepository.countByStatus("Reserved");
-        return new DashboardResponse(totalRooms, availableRooms, reservedRooms, occupiedRooms, totalCustomers, activeReservations);
+    public ResponseEntity<DashboardResponse> getSummary() {
+        return ResponseEntity.ok(dashboardService.getDashboardSummary());
     }
 }

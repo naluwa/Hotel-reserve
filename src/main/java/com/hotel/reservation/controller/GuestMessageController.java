@@ -29,13 +29,13 @@ public class GuestMessageController {
     }
 
     @GetMapping
-    public List<GuestMessage> getMessages() {
-        return guestMessageService.getAllMessages();
+    public ResponseEntity<List<GuestMessage>> getMessages() {
+        return ResponseEntity.ok(guestMessageService.getAllMessages());
     }
 
     @GetMapping("/my")
-    public List<GuestMessage> getMyMessages(Authentication authentication) {
-        return guestMessageService.getMessagesForCustomer(authentication.getName());
+    public ResponseEntity<List<GuestMessage>> getMyMessages(Authentication authentication) {
+        return ResponseEntity.ok(guestMessageService.getMessagesForCustomer(authentication.getName()));
     }
 
     @PutMapping("/{id}/read")
@@ -56,5 +56,14 @@ public class GuestMessageController {
         String repliedBy = authentication != null ? authentication.getName() : "Concierge";
         GuestMessage updated = guestMessageService.replyToMessage(id, replyText, repliedBy);
         return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteMessage(@PathVariable String id) {
+        if (id == null || id.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        guestMessageService.deleteMessage(id);
+        return ResponseEntity.noContent().build();
     }
 }

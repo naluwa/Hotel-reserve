@@ -3,6 +3,7 @@ package com.hotel.reservation.controller;
 import com.hotel.reservation.model.Customer;
 import com.hotel.reservation.service.CustomerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +17,8 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @GetMapping
-    public List<Customer> getCustomers() {
-        return customerService.getAllCustomers();
+    public ResponseEntity<List<Customer>> getCustomers() {
+        return ResponseEntity.ok(customerService.getAllCustomers());
     }
 
     @GetMapping("/{id}")
@@ -29,11 +30,7 @@ public class CustomerController {
 
     @PostMapping
     public ResponseEntity<Customer> createCustomer(@RequestBody Customer customer) {
-        if (customer.getNicPassport() != null && !customer.getNicPassport().isBlank() &&
-                customerService.getCustomerByNicPassport(customer.getNicPassport()).isPresent()) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(customerService.saveCustomer(customer));
+        return ResponseEntity.status(HttpStatus.CREATED).body(customerService.saveCustomer(customer));
     }
 
     @PutMapping("/{id}")
@@ -52,7 +49,7 @@ public class CustomerController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCustomer(@PathVariable String id) {
-        customerService.deleteById(id);
+        customerService.deleteCustomer(id);
         return ResponseEntity.noContent().build();
     }
 }

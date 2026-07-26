@@ -70,7 +70,7 @@ public class EmailService {
         if (htmlTemplate != null && !htmlTemplate.isBlank()) {
             htmlContent = String.format(htmlTemplate, guestName, roomNumber, roomType, checkIn, checkOut, pricePerNight, totalAmount);
         } else {
-            htmlContent = String.format("<h2>Hello, %s!</h2><p>Your reservation for %s — %s from %s to %s has been confirmed. Total: LKR %.2f</p>",
+            htmlContent = String.format("<h2>Hello, %s!</h2><p>Your reservation for %s - %s from %s to %s has been confirmed. Total: LKR %.2f</p>",
                     guestName, roomNumber, roomType, checkIn, checkOut, totalAmount);
         }
 
@@ -102,7 +102,7 @@ public class EmailService {
         if (htmlTemplate != null && !htmlTemplate.isBlank()) {
             htmlContent = String.format(htmlTemplate, guestName, roomNumber, roomType);
         } else {
-            htmlContent = String.format("<h2>Hello, %s</h2><p>Your reservation for %s — %s has been cancelled.</p>",
+            htmlContent = String.format("<h2>Hello, %s</h2><p>Your reservation for %s - %s has been cancelled.</p>",
                     guestName, roomNumber, roomType);
         }
 

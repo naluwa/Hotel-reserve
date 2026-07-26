@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @Document(collection = "reservations")
 public class Reservation {
+
     @Id
     private String id;
 
@@ -33,4 +35,22 @@ public class Reservation {
     private String paymentStatus;
     private LocalDateTime actualCheckIn;
     private LocalDateTime actualCheckOut;
+
+    @Transient
+    private double pricePerNight;
+
+    public double calculateTotalAmount() {
+        if (this.pricePerNight > 0 && this.numberOfNights > 0) {
+            return this.numberOfNights * this.pricePerNight;
+        }
+        return this.totalAmount;
+    }
+
+    public void confirm() {
+        this.status = "Reserved";
+    }
+
+    public void cancel() {
+        this.status = "Cancelled";
+    }
 }

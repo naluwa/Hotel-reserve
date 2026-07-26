@@ -2,6 +2,7 @@ package com.hotel.reservation.service;
 
 import com.hotel.reservation.dto.ReservationRequest;
 import com.hotel.reservation.exception.ResourceNotFoundException;
+import com.hotel.reservation.exception.RoomUnavailableException;
 import com.hotel.reservation.model.Customer;
 import com.hotel.reservation.model.Reservation;
 import com.hotel.reservation.model.Room;
@@ -12,20 +13,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final RoomRepository roomRepository;
     private final CustomerRepository customerRepository;
     private final EmailService emailService;
+    private final ReservationDomainService reservationDomainService;
+    private final ReservationStateService reservationStateService;
+    private final ReservationLifecycleService reservationLifecycleService;
 
     public List<Reservation> getAllReservations() {
         return reservationRepository.findAll();
@@ -37,14 +38,13 @@ public class ReservationService {
     }
 
     public Reservation createReservation(ReservationRequest request) {
-        if (!request.getCheckOutDate().isAfter(request.getCheckInDate())) {
-            throw new IllegalArgumentException("Check-out date must be after check-in date.");
-        }
+        reservationDomainService.validateStayDates(request.getCheckInDate(), request.getCheckOutDate());
 
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new ResourceNotFoundException("Room", "id", request.getRoomId()));
-        if (room.getStatus().equals("Occupied")) {
-            throw new IllegalArgumentException("Room is currently occupied.");
+
+        if (!room.checkAvailability(request.getCheckInDate(), request.getCheckOutDate())) {
+            throw new RoomUnavailableException(room.getRoomNumber());
         }
 
         boolean hasOverlap = !reservationRepository
@@ -52,30 +52,17 @@ public class ReservationService {
                         request.getRoomId(), request.getCheckOutDate(), request.getCheckInDate(),
                         List.of("Reserved", "Checked In")
                 ).isEmpty();
-        if (hasOverlap) {
-            throw new IllegalArgumentException("Selected dates overlap with an existing reservation.");
-        }
+        reservationDomainService.ensureNoOverlap(hasOverlap);
 
         Customer customer = resolveCustomer(request);
 
-        long nights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
-        double totalAmount = nights * room.getPricePerNight();
+        int nights = reservationDomainService.calculateNights(request.getCheckInDate(), request.getCheckOutDate());
+        double totalAmount = reservationDomainService.calculateTotalAmount(nights, room.getPricePerNight());
 
-        Reservation reservation = Reservation.builder()
-                .customerId(customer.getId())
-                .customerName(customer.getFullName())
-                .customerEmail(customer.getEmail())
-                .roomId(room.getId())
-                .checkInDate(request.getCheckInDate())
-                .checkOutDate(request.getCheckOutDate())
-                .numberOfGuests(request.getNumberOfGuests())
-                .numberOfNights((int) nights)
-                .totalAmount(totalAmount)
-                .status("Reserved")
-                .paymentStatus("PENDING")
-                .build();
+        Reservation reservation = reservationDomainService.createPendingReservation(request, customer, room, nights, totalAmount);
+        reservation.confirm();
 
-        room.setStatus("Reserved");
+        room.updateStatus("Reserved");
         roomRepository.save(room);
 
         Reservation savedReservation = reservationRepository.save(reservation);
@@ -101,11 +88,12 @@ public class ReservationService {
             existing.setPaymentStatus(request.getPaymentStatus());
         }
 
-        long nights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
-        existing.setNumberOfNights((int) nights);
-        existing.setTotalAmount(nights * roomRepository.findById(request.getRoomId())
+        int nights = reservationDomainService.calculateNights(request.getCheckInDate(), request.getCheckOutDate());
+        double pricePerNight = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new ResourceNotFoundException("Room", "id", request.getRoomId()))
-                .getPricePerNight());
+                .getPricePerNight();
+        existing.setNumberOfNights(nights);
+        existing.setTotalAmount(reservationDomainService.calculateTotalAmount(nights, pricePerNight));
 
         return reservationRepository.save(existing);
     }
@@ -127,7 +115,7 @@ public class ReservationService {
         }
         if (request.getCustomerEmail() != null && !request.getCustomerEmail().isBlank()) {
             Customer customer = customerRepository.findByEmail(request.getCustomerEmail())
-                    .orElseGet(() -> Customer.builder().email(request.getCustomerEmail()).build());
+                    .orElseGet(() -> Customer.builder().email(request.getCustomerEmail()).role("CUSTOMER").build());
 
             if (request.getCustomerName() != null && !request.getCustomerName().isBlank()) {
                 customer.setFullName(request.getCustomerName());
@@ -146,51 +134,26 @@ public class ReservationService {
         throw new IllegalArgumentException("Customer information is required.");
     }
 
-    public void deleteReservation(String id) {
+    public void deleteReservation(String id, String callerEmail, boolean isAdmin) {
         Reservation reservation = reservationRepository.findById(id).orElse(null);
-        if (reservation != null) {
-            Room room = roomRepository.findById(reservation.getRoomId()).orElse(null);
-            reservationRepository.deleteById(id);
-            boolean canceled = emailService.sendBookingCancellation(reservation, room);
-            if (!canceled) {
-                log.warn("Failed to send booking cancellation for reservation id={}", id);
-            }
+        if (reservation == null) {
+            return;
+        }
+
+        reservationStateService.cancelReservation(id, callerEmail, isAdmin);
+
+        boolean canceled = emailService.sendBookingCancellation(reservation,
+                roomRepository.findById(reservation.getRoomId()).orElse(null));
+        if (!canceled) {
+            log.warn("Failed to send booking cancellation for reservation id={}", id);
         }
     }
 
     public Reservation checkIn(String id) {
-        Reservation reservation = getReservation(id);
-        if (!"Reserved".equals(reservation.getStatus())) {
-            throw new IllegalArgumentException(
-                "Check-in is only allowed for reservations with status 'Reserved'. Current status: " + reservation.getStatus()
-            );
-        }
-        reservation.setStatus("Checked In");
-        reservation.setActualCheckIn(LocalDateTime.now());
-
-        Room room = roomRepository.findById(reservation.getRoomId())
-                .orElseThrow(() -> new ResourceNotFoundException("Room", "id", reservation.getRoomId()));
-        room.setStatus("Occupied");
-        roomRepository.save(room);
-
-        return reservationRepository.save(reservation);
+        return reservationLifecycleService.checkIn(id);
     }
 
     public Reservation checkOut(String id) {
-        Reservation reservation = getReservation(id);
-        if (!"Checked In".equals(reservation.getStatus())) {
-            throw new IllegalArgumentException(
-                "Check-out is only allowed for reservations with status 'Checked In'. Current status: " + reservation.getStatus()
-            );
-        }
-        reservation.setStatus("Checked Out");
-        reservation.setActualCheckOut(LocalDateTime.now());
-
-        Room room = roomRepository.findById(reservation.getRoomId())
-                .orElseThrow(() -> new ResourceNotFoundException("Room", "id", reservation.getRoomId()));
-        room.setStatus("Available");
-        roomRepository.save(room);
-
-        return reservationRepository.save(reservation);
+        return reservationLifecycleService.checkOut(id);
     }
 }

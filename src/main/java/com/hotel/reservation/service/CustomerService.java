@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,19 +18,23 @@ public class CustomerService {
         return customerRepository.findAll();
     }
 
-    public java.util.Optional<Customer> getCustomerById(String id) {
+    public Optional<Customer> getCustomerById(String id) {
         return customerRepository.findById(id);
     }
 
-    public java.util.Optional<Customer> getCustomerByNicPassport(String nicPassport) {
+    public Optional<Customer> getCustomerByNicPassport(String nicPassport) {
         return customerRepository.findByNicPassport(nicPassport);
     }
 
     public Customer saveCustomer(Customer customer) {
+        String nicPassport = customer.getNicPassport();
+        if (nicPassport != null && !nicPassport.isBlank() && customerRepository.findByNicPassport(nicPassport).isPresent()) {
+            throw new IllegalArgumentException("A customer with this NIC/Passport is already registered.");
+        }
         return customerRepository.save(customer);
     }
 
-    public void deleteById(String id) {
+    public void deleteCustomer(String id) {
         customerRepository.deleteById(id);
     }
 }
