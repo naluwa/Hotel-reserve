@@ -62,11 +62,11 @@ const apiRequest = async (path, options = {}) => {
   return handleResponse(response);
 };
 
-export const loginUser = (username, password) =>
+export const loginUser = (email, password) =>
   apiRequest("/api/auth/login", {
     method: "POST",
     headers: buildHeaders(),
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ email, password }),
   });
 
 export const registerCustomer = (
@@ -253,6 +253,12 @@ export const fetchMyGuestMessages = (token) =>
 export const markGuestMessageAsRead = (id, token) =>
   apiRequest(`/api/messages/${id}/read`, {
     method: "PUT",
+    headers: buildHeaders(token),
+  });
+
+export const deleteGuestMessage = (id, token) =>
+  apiRequest(`/api/messages/${id}`, {
+    method: "DELETE",
     headers: buildHeaders(token),
   });
 

@@ -36,14 +36,35 @@ const INITIAL_GALLERY = [
   },
 ];
 
-export default function GalleryPage({ isAdmin = false, showToast }) {
-  const [images, setImages] = useState(() => {
-    try {
-      const saved = localStorage.getItem("hotel_gallery_images_v2");
-      if (saved) return JSON.parse(saved);
-    } catch {}
+const isValidGalleryItem = (item) => {
+  return (
+    item &&
+    typeof item === "object" &&
+    item.id != null &&
+    typeof item.title === "string" &&
+    item.title.trim() !== "" &&
+    typeof item.src === "string" &&
+    item.src.trim() !== ""
+  );
+};
+
+const getInitialGallery = () => {
+  try {
+    const saved = localStorage.getItem("hotel_gallery_images_v2");
+    if (!saved) return INITIAL_GALLERY;
+
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) return INITIAL_GALLERY;
+
+    const validImages = parsed.filter(isValidGalleryItem);
+    return validImages.length ? validImages : INITIAL_GALLERY;
+  } catch {
     return INITIAL_GALLERY;
-  });
+  }
+};
+
+export default function GalleryPage({ isAdmin = false, showToast }) {
+  const [images, setImages] = useState(getInitialGallery);
 
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState("General");

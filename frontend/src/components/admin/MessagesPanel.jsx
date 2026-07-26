@@ -4,6 +4,7 @@ import {
   fetchGuestMessages,
   markGuestMessageAsRead,
   replyToGuestMessage,
+  deleteGuestMessage,
 } from "../../services/api";
 
 export default function MessagesPanel({ token, showToast }) {
@@ -193,6 +194,33 @@ export default function MessagesPanel({ token, showToast }) {
                     : message.replied
                       ? "Edit Reply"
                       : "Reply to Guest"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    const confirmed = window.confirm(
+                      "Delete this message permanently?",
+                    );
+                    if (!confirmed) {
+                      return;
+                    }
+                    try {
+                      await deleteGuestMessage(message.id, token);
+                      setMessages((current) =>
+                        current.filter((item) => item.id !== message.id),
+                      );
+                      showToast?.("Message deleted successfully.", "success");
+                    } catch (err) {
+                      showToast?.(
+                        err.message || "Could not delete message",
+                        "error",
+                      );
+                    }
+                  }}
+                >
+                  Delete
                 </Button>
               </div>
 
