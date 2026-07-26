@@ -1,27 +1,36 @@
 # 🏨 Grand Reserve Hotel Reservation System
 
-A full-stack hotel reservation web application that enables guests to search and book hotel rooms while providing administrators with a comprehensive management dashboard.
+Grand Reserve is a full-stack hotel reservation application built with a React frontend and a Spring Boot backend backed by MongoDB. 
 
 **🌐 Live Demo:** https://hotel-reserve.vercel.app/
 
----
 
 ## 📖 Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
-- [Technology Stack](#technology-stack)
-- [System Architecture](#system-architecture)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Configuration](#configuration)
-- [API Overview](#api-overview)
-- [Application Workflow](#application-workflow)
-- [Security](#security)
-- [Future Improvements](#future-improvements)
-- [Notes](#notes)
+  - [Customer features](#customer-features)
+  - [Admin features](#admin-features)
+- [Technology stack](#technology-stack)
+  - [Frontend](#frontend)
+  - [Backend](#backend)
+- [Backend architecture](#backend-architecture)
+- [Project structure](#project-structure)
+- [Running the project](#running-the-project)
+  - [Prerequisites](#prerequisites)
+  - [Backend](#backend-1)
+  - [Frontend](#frontend-1)
+- [Environment variables](#environment-variables)
+- [Main API endpoints](#main-api-endpoints)
+  - [Authentication](#authentication)
+  - [Rooms](#rooms)
+  - [Reservations](#reservations)
+  - [Admin and customer management](#admin-and-customer-management)
+  - [Messages and dashboard](#messages-and-dashboard)
 - [Screenshots](#screenshots)
+- [Future Improvements](#future-improvements)
 - [License](#license)
+- [Authors](#authors)
 
 ---
 
@@ -31,7 +40,7 @@ Grand Reserve Hotel Reservation System is a modern hotel management platform bui
 
 The application provides two separate experiences:
 
-- **Guest Portal** – Search rooms, create bookings, manage reservations, make payments, and communicate with hotel staff.
+- **Customer Portal** – Search rooms, create bookings, manage reservations, make payments, and communicate with hotel staff.
 - **Admin Portal** – Manage rooms, customers, reservations, payments, guest messages, check-ins/check-outs, and administrator accounts.
 
 The backend exposes a secure REST API protected with JWT authentication, while the frontend provides a responsive and user-friendly interface.
@@ -40,371 +49,170 @@ The backend exposes a secure REST API protected with JWT authentication, while t
 
 # Features
 
-## Customer Features
+## Customer features
 
-- Browse available hotel rooms
-- Search room availability by check-in/check-out dates
-- Register and login securely
-- Create and manage reservations
-- View booking and payment status
-- Cancel reservations
-- Send messages to hotel support
+- register and sign in securely
+- browse available rooms
+- create reservations for selected dates
+- view their own reservation history
+- cancel reservations
+- send guest messages
 
----
+## Admin features
 
-## Administrator Features
+- manage room inventory
+- manage customer accounts and admin users
+- manage reservations and payment status
+- process check-in and check-out flows
+- view dashboard summaries
+- review and reply to guest messages
 
-- Secure admin authentication
-- Dashboard with hotel summary
-- Room management (Create, Read, Update, Delete)
-- Customer management
-- Reservation management
-- Check-in & Check-out processing
-- Payment management
-- Guest message management
-- Administrator account management
-
----
-
-# Technology Stack
+# Technology stack
 
 ## Frontend
 
-- React 18
+- React
 - Vite
 - Tailwind CSS
-- Axios
-- React Router
 
 ## Backend
 
+- Java 17
 - Spring Boot 3.5
 - Spring Security
-- JWT Authentication
 - Spring Data MongoDB
+- JWT authentication
 - Maven
+- Spring Mail
 
-## Database
+# Backend architecture
 
-- MongoDB
-
-## Deployment
-
-- Frontend: Vercel
-- Backend: Spring Boot Server
-
----
-
-# System Architecture
-
-```
-               React + Vite
-                     │
-             REST API (JWT)
-                     │
-             Spring Boot Backend
-                     │
-                 MongoDB
+```text
+React frontend -> REST API -> Controllers
+                           -> Services
+                           -> Repositories / MongoDB
+                           -> Security / JWT
+                           -> Email service
 ```
 
----
+# Project structure
 
-# Project Structure
-
-```
-Hotel-reserve/
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── services/
-│   │   ├── config/
-│   │   └── App.jsx
-│   └── package.json
-│
-├── src/
-│   └── main/
-│       ├── java/com/hotel/reservation/
-│       │   ├── controller/
-│       │   ├── service/
-│       │   ├── repository/
-│       │   ├── model/
-│       │   ├── dto/
-│       │   └── security/
-│       │
-│       └── resources/
-│           ├── application.yaml
-│           └── templates/
-│
-├── pom.xml
-└── README.md
+```text
+src/main/java/com/hotel/reservation/
+  config/
+  controller/
+  dto/
+  exception/
+  model/
+  repository/
+  security/
+  service/
+src/main/resources/
+frontend/
 ```
 
----
-
-# Getting Started
+# Running the project
 
 ## Prerequisites
 
-Before running the project, install:
-
 - Java 17+
 - Maven
-- Node.js (Latest LTS)
+- Node.js 18+
 - npm
-- MongoDB
+- MongoDB running locally
 
----
-
-## Clone the Repository
-
-```bash
-git clone https://github.com/nalwua/Hotel-reserve.git
-
-cd Hotel-reserve
-```
-
----
-
-# Backend Setup
-
-Run the Spring Boot server.
+## Backend
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-Or build the project first.
+Windows PowerShell:
 
-```bash
-./mvnw clean package
-
-java -jar target/hotel-reservation-0.0.1-SNAPSHOT.jar
+```powershell
+./mvnw.cmd spring-boot:run
 ```
 
-Default backend URL
+Default backend URL:
 
-```
+```text
 http://localhost:8082
 ```
 
----
-
-# Frontend Setup
-
-Navigate to the frontend.
+## Frontend
 
 ```bash
 cd frontend
-```
-
-Install dependencies.
-
-```bash
 npm install
-```
-
-Start the development server.
-
-```bash
 npm run dev
 ```
 
-Default frontend URL
+Default frontend URL:
 
-```
+```text
 http://localhost:5173
 ```
 
----
+# Environment variables
 
-# Configuration
-
-Backend configuration is located in:
-
-```
-src/main/resources/application.yaml
-```
-
-Example configuration:
-
-```yaml
+```text
 MONGO_URI=mongodb://localhost:27017/hotel_reservation
-
 SERVER_PORT=8082
-
-JWT_SECRET=your_secret_key
-
-JWT_EXPIRATION=86400000
-
-MAIL_HOST=
-
-MAIL_PORT=
-
-MAIL_USERNAME=
-
-MAIL_PASSWORD=
+JWT_SECRET=your_secret
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_email
+MAIL_PASSWORD=your_password
+MAIL_FROM=your_email
+MAIL_TO=your_email
 ```
 
-Frontend configuration:
-
-```
-frontend/.env
-```
-
-```env
-VITE_API_BASE_URL=http://localhost:8082
-```
-
----
-
-# API Overview
+# Main API endpoints
 
 ## Authentication
 
-| Method | Endpoint                       |
-| ------ | ------------------------------ |
-| POST   | /api/auth/login                |
-| POST   | /api/auth/register             |
-| POST   | /api/auth/setup-admin-password |
-
----
+- POST /api/auth/login
+- POST /api/auth/register
+- POST /api/auth/setup-admin-password
 
 ## Rooms
 
-| Method | Endpoint             |
-| ------ | -------------------- |
-| GET    | /api/rooms           |
-| GET    | /api/rooms/{id}      |
-| GET    | /api/rooms/available |
-| POST   | /api/rooms           |
-| PUT    | /api/rooms/{id}      |
-| DELETE | /api/rooms/{id}      |
-
----
+- GET /api/rooms
+- GET /api/rooms/available
+- GET /api/rooms/{id}
+- POST /api/rooms
+- PUT /api/rooms/{id}
+- DELETE /api/rooms/{id}
 
 ## Reservations
 
-| Method | Endpoint                         |
-| ------ | -------------------------------- |
-| POST   | /api/reservations                |
-| GET    | /api/reservations                |
-| GET    | /api/reservations/my             |
-| PUT    | /api/reservations/{id}           |
-| DELETE | /api/reservations/{id}           |
-| POST   | /api/reservations/{id}/check-in  |
-| POST   | /api/reservations/{id}/check-out |
+- POST /api/reservations
+- GET /api/reservations
+- GET /api/reservations/my
+- GET /api/reservations/{id}
+- PUT /api/reservations/{id}
+- PUT /api/reservations/{id}/payment
+- DELETE /api/reservations/{id}
+- POST /api/reservations/{id}/check-in
+- POST /api/reservations/{id}/check-out
 
----
+## Admin and customer management
 
-## Payments
+- GET /api/customers
+- GET /api/customers/{id}
+- GET /api/admin/users
+- POST /api/admin/users
+- DELETE /api/admin/users/{id}
 
-| Method | Endpoint           |
-| ------ | ------------------ |
-| GET    | /api/payments      |
-| POST   | /api/payments      |
-| PUT    | /api/payments/{id} |
+## Messages and dashboard
 
----
-
-## Customers
-
-| Method | Endpoint            |
-| ------ | ------------------- |
-| GET    | /api/customers      |
-| GET    | /api/customers/{id} |
-| POST   | /api/customers      |
-| PUT    | /api/customers/{id} |
-| DELETE | /api/customers/{id} |
-
----
-
-## Messages
-
-| Method | Endpoint                 |
-| ------ | ------------------------ |
-| POST   | /api/messages            |
-| GET    | /api/messages/my         |
-| GET    | /api/messages            |
-| PUT    | /api/messages/{id}/read  |
-| POST   | /api/messages/{id}/reply |
-
----
-
-## Dashboard
-
-| Method | Endpoint               |
-| ------ | ---------------------- |
-| GET    | /api/dashboard/summary |
-
----
-
-# Application Workflow
-
-## Guest
-
-- Register/Login
-- Browse available rooms
-- Search availability
-- Book rooms
-- Make payments
-- Manage reservations
-- Contact hotel support
-
----
-
-## Administrator
-
-- Login
-- Manage hotel rooms
-- View reservations
-- Process check-ins
-- Process check-outs
-- Manage payments
-- Manage customers
-- Reply to guest messages
-- Manage administrator accounts
-
----
-
-# Security
-
-The application includes several security features:
-
-- JWT Authentication
-- Spring Security
-- Password encryption using BCrypt
-- Role-based authorization
-- Protected Admin APIs
-- Secure REST endpoints
-
----
-
-# Future Improvements
-
-Potential enhancements include:
-
-- Stripe payment integration
-- Online payment gateway
-- PDF invoice generation
-- Email verification
-- Room image gallery
-- Booking analytics dashboard
-- Docker support
-- CI/CD pipeline
-- Unit and integration tests
-- Multi-language support
-
----
-
-# Notes
-
-- JWT tokens are stored in browser localStorage.
-- Booking confirmation and cancellation emails are supported.
-- CORS is configured for local frontend development.
-- MongoDB is used for persistent storage.
-- The backend follows a RESTful architecture.
+- POST /api/messages
+- GET /api/messages
+- GET /api/messages/my
+- PUT /api/messages/{id}/read
+- POST /api/messages/{id}/reply
+- DELETE /api/messages/{id}
+- GET /api/dashboard/summary
 
 ---
 
@@ -436,6 +244,10 @@ Potential enhancements include:
 
 ![Sign In Page](screenshots/sign-in.png)
 
+## My Bookings
+
+![My Bookings](screenshots/my-bookings.png)
+
 ## Admin Dashboard
 
 ![Manage Rooms](screenshots/admindashboard-manage_rooms.png)
@@ -456,16 +268,23 @@ Potential enhancements include:
 
 ---
 
-# License
+# Future Improvements
 
-This project is available for educational and portfolio purposes.
 
-You may modify and extend the application for your own use.
+- integration with a real payment gateway
+- automated invoice generation
+- SMS and push notification support
+- multi-property or multi-branch hotel support
+- mobile-first or native mobile application development
+- analytics and reporting enhancements
 
 ---
 
-# Authors
+# License
 
-**Ravishan & Tharusha**
+This project was developed as part of the CSC 2032 – Object Oriented Programming module and is intended for academic purposes.
+
+---
 
 If you found this project helpful, consider giving it a ⭐ on GitHub.
+
